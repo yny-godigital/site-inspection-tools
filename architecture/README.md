@@ -2,7 +2,7 @@
 
 > Reference annex to the plan pack. The plan (`../00-index.md`) is the single source of truth: on scope, schedule and estimates the plan applies; on routes and payloads the interface spec in this folder applies.
 
-One folder, thirteen artefacts: nine diagrams and four documents — the brief, the interface spec, the build plan and the deferred register.
+One folder, ten artefacts: six diagrams and four documents — the brief, the interface spec, the build plan and the deferred register.
 
 Built 24 November 2026 from the architecture alignment interview. Revised the same day when the delivery model changed to web-first, and again on 26 November 2026 when the screenshot trigger moved from a file share to HTTP through a Hub queue.
 
@@ -25,23 +25,21 @@ That is a smaller claim than the earlier documents made, and it is the true one.
 1. [Who touches it](context.html): actors, external systems, and the boundary. Start here.
 2. [Deployment on site](deployment.html): machines, stores, the no-internet line, and the manual upload into ACC.
 3. [Components and the one seam](components.html): browser client, Hub API, and the store that v2 will swap.
-4. [Step states](step-states.html): open, claimed, in progress, submitted, plus lease expiry.
-5. [Sealing and editions](editions.html): a person seals one form, a compile never changes state.
+4. [Logical architecture](logical.html): Hub internals apart from machines, the only place with SQL, and the one evidence writer.
+5. [Step states](step-states.html): open, claimed, in progress, submitted, plus lease expiry.
+6. [Sealing and editions](editions.html): a person seals one form, a compile never changes state.
 
-**Sequence**
+**Sequences**
 
-6. [Capture and submit one step](sequence.html): claim, photo upload, screenshot, record submit.
-7. [The screenshot integration](screenshot.html): trigger out over HTTP through the Hub queue, image back over HTTP.
-8. [Compile and collect the bundle](compile.html): a job, then a download by a person.
-9. [Open the app the next morning](resume.html): session, grid, and what happened to yesterday's claim.
+7. [Presentation set](../presentation/index.html): seventeen per flow sequences S01 to S17, with payloads and branch cards. The four old summary pages in this folder were removed on 26 November 2026 because they duplicated that set. Map: capture and submit is S04 plus S05 plus S06 plus S07, screenshot is S10, compile is S11, next morning is S01 plus S02.
 
 **Text**
 
-10. [Plan pack](../00-index.md): scope, requirements, estimates and open questions. This plan is the single source of truth; hand it over with the diagrams.
-11. [Interface spec](architecture-v1-interface-spec.md): routes, payloads, errors, schema, configuration shape, glossary, build order.
-12. [Build plan](build-plan.md): the tasks, their dependencies, and the test that says each one is done. No effort, no dates.
+8. [Plan pack](../00-index.md): scope, requirements, estimates and open questions. This plan is the single source of truth; hand it over with the diagrams.
+9. [Interface spec](architecture-v1-interface-spec.md): routes, payloads, errors, schema, configuration shape, glossary, build order.
+10. [Build plan](build-plan.md): the tasks, their dependencies, and the test that says each one is done. No effort, no dates.
 
-Each diagram is a standalone HTML file with dark and light themes and a still or live toggle. The sequences are derived from the spec, so where they disagree, the spec wins.
+Each diagram is a standalone HTML file with dark and light themes and a still or live toggle. Structure diagrams live here. Full sequences live in `../presentation/`, derived from 04-design.md, so where they disagree, that document wins.
 
 ## Decisions
 
@@ -143,13 +141,13 @@ Closed since the last revision: TLS is no longer required for the camera, the e-
 
 ## Verification
 
-Automated gates passed on all nine diagrams: schema validation, delivery, strict checks, and a real-browser viewport check. No unresolved crossings remain. None of the nine has been reviewed by eye.
+Automated gates passed on all six diagrams: schema validation, delivery, strict checks, and a real-browser viewport check. The logical diagram passed with three crossings left on secondary store edges. None of the six has had a full eye review. The seventeen presentation sequences pass the same gates from their own generator.
 
-**Known debt after the 25 November revision.** The two diagrams that disagreed with the spec — `step-states.html` (five states, a `verified` transition) and `sequence.html` (upload on capture, no submit leg) — were **regenerated on 25 November 2026** from their updated sources. All gates pass: validate, deliver, check and a real-browser viewport check. Neither has been reviewed by eye since.
+**Known debt after the 25 November revision.** The diagram that disagreed with the spec — `step-states.html` (five states, a `verified` transition) — was **regenerated on 25 November 2026** from its updated source. All gates pass: validate, deliver, check and a real-browser viewport check. It has not been reviewed by eye since. The old `sequence.html` summary in this folder had the same problem (upload on capture, no submit leg) and was removed on 26 November 2026 in favour of the presentation S set.
 
 ## Working files
 
-`.working/` holds the nine diagram sources and their gate receipts. Nothing there is a deliverable. Regenerate a diagram from the pack folder:
+`.working/` holds the six diagram sources and their gate receipts. Nothing there is a deliverable. Regenerate a diagram from the pack folder:
 
 ```bash
 node /home/ccw/.agents/skills/archify/bin/archify.mjs finalize architecture \
@@ -157,4 +155,4 @@ node /home/ccw/.agents/skills/archify/bin/archify.mjs finalize architecture \
 mv architecture/*.json architecture/.working/
 ```
 
-The type differs by diagram: `architecture` for context, deployment and components; `sequence` for the four call flows; `lifecycle` for step states. The `mv` line matters, because a run always writes its receipts next to the HTML.
+The type differs by diagram: `architecture` for context, deployment, components and logical; `lifecycle` for step states and editions. Sequences now live in `../presentation/` and regenerate from `../presentation/.working/gen_sequences.py`. The `mv` line matters, because a run always writes its receipts next to the HTML.

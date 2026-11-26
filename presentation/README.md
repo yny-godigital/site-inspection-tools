@@ -6,7 +6,8 @@ before site commissioning (S15, S16, S17). Where the two disagree, the document
 wins and this folder is regenerated.
 
 Open [`index.html`](index.html) to browse all seventeen. Each page has dark and light themes and a still
-or live toggle.
+or live toggle. For structure start with [`../architecture/README.md`](../architecture/README.md):
+context, deployment, components, logical, step states, editions. This folder holds only the sequences.
 
 | File | Flow | Routes covered |
 |---|---|---|

@@ -575,7 +575,7 @@ Steps 3 to 5 are the split point: one developer on the Hub, one on the client, w
 This revision changed more than the diagrams were built from. Two disagreed and were regenerated from `.working/*.json` on 25 November 2026, with all gates passing (validate, deliver, check, browser check):
 
 - `step-states.html` now shows four states, with `submitted` reached by an explicit act and no `complete` or `verified` transition.
-- `sequence.html` now shows pick-before-upload, the screenshot status poll, and a separate submit leg.
+- The old `sequence.html` summary now shows pick-before-upload, the screenshot status poll, and a separate submit leg, but it was removed on 26 November 2026. The presentation S set (S04 plus S05 plus S06 plus S07, and S10) carries that flow now.
 
 Neither has been reviewed by eye since regeneration. The other seven diagrams were not affected by this revision and are unchanged.
 
