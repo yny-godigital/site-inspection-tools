@@ -52,7 +52,7 @@ Create the repo layout: `server/`, `client/`, `shared/`, `repo/`, `config/`, `mi
 *Done when:* a clean copy of the folder builds and passes tests with no network access. The build output runs with `node dist/server.js`.
 
 **A2. Configuration constants**
-All tunables in one module: lease 12 h, session 12 h, screenshot expiry 90 s, poll interval 2 s, image caps 3000 px / 8 MB / 20 MB / 10 MB, paths for evidence, derived, data, backups, capture share.
+All tunables in one module: lease 12 h, session 12 h, screenshot expiry 90 s, poll interval 2 s, image caps 3000 px / 8 MB / 20 MB / 10 MB, Hub-to-tool timeout 5 s, queue depth 100, tool host and port, paths for evidence, derived, data, backups.
 *Done when:* a test asserts that no numeric literal above 60 appears in a route or repository file, and that changing the cap in config changes the enforced limit.
 
 **A3. Schema and migrations**
@@ -120,12 +120,12 @@ Generate the 1000 px document copy; apply EXIF orientation before capping; conve
 *Done when:* a portrait phone photo lands upright in both the original and the derivative; the derivative is regenerable from the original; a HEIC that cannot be converted is refused with a readable message.
 
 **C0. Stub capture tool**
-A small script for tests and rehearsals: watch the share, read a request id, post a PNG from a local folder with the service token. Not shipped to the site.
+A small HTTP script for tests and rehearsals: exposes `POST /capture`, reads a request id, posts a PNG from a local folder with the service token. Not shipped to the site.
 *Done when:* C3 and C4 pass against the stub on a machine with no WinCC, and the stub is refused when it presents a wrong token.
 
-**C3. Screenshot request and status**
-`POST /requests/screenshot` writes the trigger file and a request row; `GET /requests/{id}` derives `pending`, `ready` or `expired`; a late `POST` is `409 expired`.
-*Done when:* an unwritable share returns `500 trigger_unwritable` and creates no row; status flips to `expired` on the server clock with no job; a served request reports the evidence hash.
+**C3. Screenshot request, Hub queue, and status**
+`POST /requests/screenshot` creates a row and enqueues a Hub-to-tool `POST /capture`; worker sends one at a time FIFO; `GET /requests/{id}` derives `pending`, `ready` or `expired`; a late `POST` is `409 expired`.
+*Done when:* tool stopped still returns 202 then reads expired after 90 s; three concurrent requests go out in order and all report ready; a served request reports the evidence hash.
 
 **C4. Service principal**
 Token issue at setup, hash stored, header check on the tool route only.
@@ -180,7 +180,7 @@ Run the whole flow on sample forms against a WinCC test target, on a machine tha
 *Done when:* one form goes from empty to a sealed edition and a bundle in one sitting; every defect found is logged with the task id it belongs to; the run is repeatable the next day after a service restart.
 
 **E4. Site-day checklist**
-Printed checklist: install, accounts, fixed address, tool token, capture share, backup drive, rollback (restore previous backup), and who to call.
+Printed checklist: install, accounts, fixed address, Hub address, tool address and port, tool token, backup drive, rollback (restore previous backup), and who to call.
 *Done when:* someone who did not build it can follow it without asking a question, and every step has a visible confirmation.
 
 ## F. Optional: document ingestion (not on the v1 path)

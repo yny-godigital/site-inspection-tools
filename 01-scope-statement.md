@@ -23,7 +23,7 @@ One real SAT, at one site, captured on the day it is tested, compiled on the sam
 - A template engine that renders one form from its pinned schema version, deterministically, with one image per slot.
 - A bundle builder: one workbook per form, evidence filed by hash under a fixed tree, a manifest that names edition, revision and flags.
 - Claim, lease, submit, seal, amendment and edition, with the audit rows they produce.
-- SCADA screenshot capture by two legs: a trigger file into a share, the image back over HTTP.
+- SCADA screenshot capture by two HTTP legs: Hub calls the tool, the image comes back over HTTP, with a simple FIFO queue in the Hub.
 - The change to the existing capture tool so it accepts a request id and posts the PNG back.
 - The site-day checklist, the rehearsal on a non-production target, and the go/no-go record for the capture tool.
 - Backup and restore from the installed folder, with no internet.

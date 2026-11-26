@@ -30,9 +30,9 @@ Solution design at the level a receiving team cannot guess: the flows, the state
 
 | Step | Actor | Action | System response | On failure |
 |---|---|---|---|---|
-| 1 | engineer | taps "screenshot" on a step with a screenshot slot | writes a trigger file carrying a new request id, creates the request row, returns 202 with `request_id` and `expires_at` | share not writable: 500 `trigger_unwritable` and no request row, so the client never waits on a request that does not exist |
+| 1 | engineer | taps "screenshot" on a step with a screenshot slot | creates the request row, enqueues Hub-to-tool call, returns 202 with `request_id` and `expires_at` | tool down: request stays pending then expired, Hub log carries the error, client shows "no screenshot after 90 seconds" and offers a new request |
 | 2 | client | polls every 2 s until the deadline | derives `pending`, `ready` or `expired` from the row and the server clock | no job runs, so no state can be stale |
-| 3 | capture tool | reads the trigger, captures the screen, posts the PNG with its service token | stores the bytes exactly as a site photo: hashed, one `evidence` row, bound to the request | wrong token 401; unknown id 404; past the deadline 409 `expired` and the bytes are dropped |
+| 3 | capture tool | receives `POST /capture`, captures the screen, posts the PNG with its service token | stores the bytes exactly as a site photo: hashed, one `evidence` row, bound to the request | wrong token 401; unknown id 404; past the deadline 409 `expired` and the bytes are dropped |
 | 4 | client | sees `ready` and shows the image for the engineer to accept | the evidence hash is now available to a step write | `expired` shows "no screenshot after 90 seconds" and offers only a new request |
 
 The tool is silent by design. The Hub cannot observe the tool failing, so it never reports a reason, only an outcome. The engineer looks at the screenshot before accepting it; there is no automated check.
@@ -75,7 +75,7 @@ Seventeen diagrams, S1 to S17. Each covers one flow and its named branches; toge
 
 The same seventeen exist as standalone HTML in `presentation/` for presenting, generated from the JSON in `presentation/sources/`. The markdown is the authoritative copy: if the two disagree, the diagram in this document wins and the HTML is regenerated.
 
-Participants, abbreviated below: `E` engineer, `C` browser client, `API` Hub API, `DB` record store, `EV` evidence store, `TOOL` capture tool, `SH` trigger folder on the SMB share, `CW` compile worker, `CLI` a command-line command, `ACC` the acceptance portal.
+Participants, abbreviated below: `E` engineer, `C` browser client, `API` Hub API, `Q` Hub queue worker, `DB` record store, `EV` evidence store, `TOOL` capture tool, `CW` compile worker, `CLI` a command-line command, `ACC` the acceptance portal.
 
 ### S1 — Sign in, carry a capability, sign out
 
@@ -361,28 +361,23 @@ sequenceDiagram
   end
 ```
 
-### S10 — Screenshot: trigger out, image back, poll, expire
+### S10 — Screenshot: HTTP trigger, image back, poll, expire
 
 ```mermaid
 sequenceDiagram
   actor E as Engineer
   participant C as Browser client
   participant API as Hub API
-  participant SH as Trigger folder
+  participant Q as Hub queue worker
   participant TOOL as Capture tool
   participant DB as Record store
   participant EV as Evidence store
   E->>C: request a screenshot for this tag
   C->>API: POST /requests/screenshot {step_id, tag, device_id}
-  alt the share cannot be written
-    API-->>C: 500 trigger_unwritable
-    Note over API: no request row is created, so nothing waits
-  else written
-    API->>SH: trigger file carrying request_id
-    API->>DB: request row, expires in 90 s
-    API-->>C: 202 {request_id, expires_at}
-  end
-  SH-->>TOOL: the tool watches the share and picks it up
+  API->>DB: request row, expires in 90 s
+  API->>Q: enqueue request_id
+  API-->>C: 202 {request_id, expires_at}
+  Q->>TOOL: POST /capture {request_id, tag, expires_at} bearer token, 5 s timeout
   TOOL->>API: POST /evidence/screenshot with the service token
   alt wrong or disabled token
     API-->>TOOL: 401 bad_service_token
@@ -696,7 +691,7 @@ One role in v1. The `role` column exists so v2 adds data, not schema. There is n
 - **Empty, first run.** A newly seeded SAT shows a grid of steps all open, no evidence and no editions. The form reads draft. Nothing is red; nothing is flagged until a person submits or seals.
 - **Empty, no site form authored.** The setup import refuses a fixture whose rows do not match the schema and names the offending row. It does not create a half-loaded step list.
 - **Partial, one engineer's device dies mid-test.** Their unsent spool is lost with the device. Steps they already wrote are on the Hub, and steps they held stay claimed until the lease expires, then read open to everyone else. This is stated in the checklist rather than hidden.
-- **Partial, capture share unreachable.** The screenshot request fails before a row is created, so the client shows a refusal rather than a spinner. Site photos and every other field keep working.
+- **Partial, capture tool unreachable.** The screenshot request still returns 202, stays pending, then reads expired. Hub log shows the send error. Client shows "no screenshot after 90 seconds" and offers a new request. Site photos and every other field keep working.
 - **Partial, ACC tree wrong.** A compile still succeeds, the bundle is complete, and the fix is one config file plus a re-run. Nothing in the record changes.
 - **Slow, grid past 200 ms.** The client shows the last grid with a stale marker and a manual refresh. There is no background polling of the grid.
 - **Slow, compile.** The job reports progress by state, not by percentage. The engineer may close the tab; the job continues and the download is by job id.

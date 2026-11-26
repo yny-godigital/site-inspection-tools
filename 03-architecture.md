@@ -4,14 +4,14 @@ Scope: contracts and boundaries. Internal structure is delegated — see `06`.
 
 ## Context
 
-One Hub on the site LAN, served to tablets over HTTP. A capture tool on the control room network is reached by a file and answers over HTTP. The acceptance portal is reached by a person, not by the system. Nothing crosses the internet.
+One Hub on the site LAN, served to tablets over HTTP. A capture tool on the control room network is called over HTTP and answers over HTTP. The acceptance portal is reached by a person, not by the system. Nothing crosses the internet.
 
 ```
   tablet browser (Chrome/Safari, no install)
         |  HTTP, session cookie, 22 routes
         v
-  +-----------------------------+          SMB share           +------------------+
-  |  Hub  (Node 22, Windows)    |  ---- trigger file ---->     |  capture tool    |
+  +-----------------------------+        HTTP call           +------------------+
+  |  Hub  (Node 22, Windows)    |  ---- POST /capture ---->   |  capture tool    |
   |  - web app + API            |  <--- POST PNG over HTTP --- |  (WinCC screen)  |
   |  - record store (SQLite)    |                              +------------------+
   |  - evidence store (files)   |
@@ -36,7 +36,7 @@ Scope is one site, one SAT. The diagram carries no internet path and no client n
 | Template engine | Renders one workbook from a pinned schema version and the step list | none | new |
 | Bundle builder | Assembles the zip from `bundle.layout.json` and writes the manifest | the bundle and `bundle_sha` | new |
 | Browser client | Grid, step screen, camera hand-off, capture spool, screenshot polling | the spool in IndexedDB only, never the record | new |
-| Capture tool | Existing WinCC screen capture; gains a request id and an HTTP post | its own local image folder | existing, changed |
+| Capture tool | Existing WinCC screen capture; adds `POST /capture` listener and an HTTP post | its own local image folder | existing, changed |
 | Setup command | Seeds accounts, issues the tool token, loads the schema and the instrument list | initial rows | new |
 | Instrument-list importer | Reads the project's instrument or IO list from a spreadsheet and creates one step per row through the setup path | `steps` | new |
 
@@ -46,12 +46,12 @@ Scope is one site, one SAT. The diagram carries no internet path and no client n
 |---|---|---|---|---|---|
 | Tablet browser | in | 22 routes; JSON bodies; evidence as multipart; one error shape `{"error":{"code","message","details"}}` | session cookie, `HttpOnly`, `SameSite=Lax`, sliding 12 h | 401 on expired session; one error shape on every failure | 3000 px long edge, 8 MB after client encode |
 | Device camera | in | `<input type="file" capture>`; no video stream, no permission API | device OS | user cancels; no file returned | one photo per invocation |
-| SMB capture share | out | one trigger file per request, carrying `request_id` | filesystem ACL on the share | `500 trigger_unwritable`, no request row created | one file per request; 90 s expiry |
+| Capture tool trigger | out | `POST /capture` with `request_id`, `tag`, `expires_at`, FIFO queue in Hub, single sender | bearer token Hub to tool, fixed LAN address and port | tool down: request stays pending then expired; queue full: 503 | one call per request; 5 s connect timeout; 90 s expiry |
 | Capture tool | in | `POST /evidence/screenshot` with `request_id`, `tool`, `tool_version`, PNG bytes | service principal token in `Authorization` | 401 bad token, 404 unknown request, 409 expired, 409 already served | 10 MB PNG |
 | ACC portal | out | a person uploads one zip; no API call from the system | client-side credentials, outside this system | a person sees the rejection and corrects by hand | not known, and not on the critical path |
-| Control room PC | not called | the Hub never reads images from the share | — | a stale trigger file stays traceable by name | — |
+| Control room PC | called | the Hub calls the tool over HTTP, the tool posts the image back over HTTP | — | Hub log carries the send error, client sees pending then expired | — |
 
-The trigger goes one way through the share because that is what a network owner will allow. The image comes back over HTTP because that is the leg where a confirmation, a timestamp and an error are worth having. Both legs then take the same evidence path.
+The trigger goes out over HTTP through a simple FIFO queue in the Hub because that keeps ordering in one place and leaves the tool single shot. The image comes back over HTTP because that is the leg where a confirmation, a timestamp and an error are worth having. Both legs then take the same evidence path.
 
 ## Data
 
@@ -127,7 +127,7 @@ Pinned means expensive to reverse. Every row cites a source or it would be an as
 | Ingestion proposes and a person commits. No candidate writes to the record, calls the API, or creates a form | build plan F3 and F4; R64 |
 | Web-first: the client is a browser app served by the Hub. The tablet installs nothing and holds no local database | architecture README D5 |
 | Per-engineer accounts issued by YNY; a normal authenticated session; no directory service; the signer does not sign in | architecture README D6; decision D17 |
-| Screenshot path is two legs: trigger file out through the share, PNG back over HTTP to the Hub | architecture README D7; interface spec, Screenshot |
+| Screenshot path is two HTTP legs: Hub calls `POST /capture` through a FIFO queue, PNG back over HTTP to the Hub | decision 2026-11-26 HTTP flow, supersedes architecture README D7; interface spec, Screenshot |
 | The step claim is decided online by the Hub with a 12 hour lease; no offline claim in v1 | architecture README D8 |
 | The browser keeps an IndexedDB spool for in-flight capture only; it is never the record | architecture README D10 |
 | Evidence is content addressed: the file name is the SHA-256 of the bytes | architecture README D11 |

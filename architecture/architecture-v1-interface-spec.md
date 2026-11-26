@@ -94,7 +94,7 @@ The client re-encodes to the 3000 px cap before sending, so the wire never carri
 
 `kind: manual_file` is accepted and stored, never embedded in the document; see the bundle section.
 
-### Screenshot, three calls
+### Screenshot, three calls over HTTP with a Hub queue
 
 ```json
 POST /requests/screenshot
@@ -104,7 +104,7 @@ POST /requests/screenshot
 { "request_id": "rq_01H...", "expires_at": "2026-12-01T09:15:30Z" }
 ```
 
-The Hub writes a trigger file carrying `request_id` into the SMB share and returns. If the share cannot be written it returns `500 trigger_unwritable` and creates no request row.
+The Hub creates the request row, enqueues a Hub-to-tool call carrying `request_id`, and returns. Queue is FIFO in memory, single sender, one call at a time. Send is `POST http://tool:8080/capture` with `request_id`, `tag`, `expires_at` and a bearer token, 5 s connect timeout. If the tool cannot be reached the request stays pending until expiry and the Hub log carries the error.
 
 The tool is silent: its only obligation is the POST below. The Hub therefore never claims to know why a shot failed.
 
@@ -116,7 +116,7 @@ GET /requests/rq_01H...
   "expires_at": "2026-12-01T09:15:30Z", "server_time": "2026-12-01T09:14:12Z" }
 ```
 
-States are derived from one row, not stored: `ready` when the evidence hash is set, `expired` when the deadline has passed with no hash, `pending` otherwise. There is no `failed`, because the Hub cannot observe the tool failing. A stale trigger file stays traceable by name.
+States are derived from one row, not stored: `ready` when the evidence hash is set, `expired` when the deadline has passed with no hash, `pending` otherwise. There is no `failed` in v1 simple queue. A queued request that never gets an image expires like any other.
 
 The browser polls every two seconds and stops at expiry. Retry is manual: the engineer asks again, which creates a new request id.
 
@@ -131,7 +131,20 @@ POST /evidence/screenshot        (the capture tool calls the Hub)
 
 The tool authenticates with a service principal token in `Authorization`, issued by the setup command. No cookie, no IP allowlist. `401 bad_service_token`. `404 unknown_request` when the id does not exist. `409 expired` when the deadline passed — the bytes are dropped and the engineer retries; the Hub does not accept a late image silently. `409 already_served` is fine.
 
-The two legs are separate on purpose. The trigger travels one way, through the share, because that is the cheapest thing to get past a network owner. The image comes back the other way, over HTTP, because that is the leg where you want a confirmation, a timestamp and an error. After that the bytes take the same path as a site photo: hashed, stored, one `evidence` row.
+The two legs are separate on purpose. The trigger goes out over HTTP through the Hub queue so ordering lives in one place and the tool stays single shot. The image comes back over HTTP because that is the leg where you want a confirmation, a timestamp and an error. After that the bytes take the same path as a site photo: hashed, stored, one `evidence` row.
+
+Tool inbound, simple first:
+
+```json
+POST http://tool:8080/capture        (the Hub calls the tool)
+Authorization: Bearer <hub_to_tool_token>
+{ "request_id": "rq_01H...", "tag": "PT-1001", "expires_at": "2026-12-01T09:15:30Z" }
+
+202 Accepted
+{ "request_id": "rq_01H...", "accepted": true }
+```
+
+Tool checks the bearer token, captures the screen for the tag, then posts to `/evidence/screenshot` as above. Tool runs one shot at a time. Hub sends one at a time in `created_at` order. No Hub retry. A new tap makes a new request id.
 
 ### Step upsert
 
@@ -534,7 +547,7 @@ The bundle is delivered as one zip. A folder tree is possible from the same sour
 | **Derivative** | A regenerable copy of evidence, such as the 1000 px document image. |
 | **Bundle** | The upload-ready folder for one SAT. |
 | **Manifest** | The index inside a bundle. |
-| **Capture folder** | SMB share the Hub writes trigger files into. The tool pushes images back over HTTP; the Hub never reads images from it. |
+| **Capture trigger** | Hub calls `POST /capture` on the tool. Tool pushes images back over HTTP; the Hub queue holds order. |
 | **Service principal** | A non-human identity with a token. The capture tool is one. |
 
 ## Build order
@@ -547,7 +560,7 @@ This is the shape of the build. The task-level version, with dependencies and a 
 4. Claim, lease, submit and seal, including lease expiry and the form-level `ready` state.
 5. Capture, the picker, evidence upload with slot binding and the hash check.
 6. Template engine, generated from the schema, with the second-schema test.
-7. Screenshot request, trigger file, status polling, tool token.
+7. Screenshot request, Hub FIFO queue, tool `POST /capture`, status polling, tool token.
 8. Bundle builder, manifest and `bundle.layout.json`.
 9. Grid, daily summary, backup and restore.
 10. Rehearsal on a sample form and a WinCC test target.

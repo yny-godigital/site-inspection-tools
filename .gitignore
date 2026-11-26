@@ -1,3 +1,10 @@
 # Generator working files and gate receipts (regenerable, not deliverables)
 .working/
 **/.working/
+presentation/.receipts/
+architecture/*.delivery.json
+architecture/*.delivery-pending.json
+architecture/*.finalize.json
+architecture/*.finalize-summary.json
+architecture/*.browser-check.json
+

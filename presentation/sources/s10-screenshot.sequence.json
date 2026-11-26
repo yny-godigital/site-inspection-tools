@@ -3,7 +3,7 @@
   "diagram_type": "sequence",
   "meta": {
     "title": "S10: the screenshot integration",
-    "subtitle": "Trigger out through the share, the image back over HTTP, state derived on the clock",
+    "subtitle": "HTTP trigger through a Hub queue, the image back over HTTP, state derived on the clock",
     "locale": "en",
     "output": "plan-2026-11-25-sat-poc-v1/presentation/s10-screenshot.html",
     "parentHref": "index.html",
@@ -23,17 +23,17 @@
       "sublabel": "Fastify"
     },
     {
-      "id": "share",
-      "type": "external",
-      "label": "Trigger folder",
-      "sublabel": "SMB share"
+      "id": "queue",
+      "type": "backend",
+      "label": "Hub queue",
+      "sublabel": "FIFO, single sender"
     },
     {
       "id": "tool",
       "type": "external",
       "label": "Capture tool",
       "sublabel": "WinCC screen",
-      "explanation": "The existing control room capture tool, changed to accept a request id and post the PNG back. It is silent: the Hub never learns why a shot failed."
+      "explanation": "The existing control room capture tool, changed to expose POST /capture and post the PNG back. Single shot, Hub sends one at a time."
     },
     {
       "id": "store",
@@ -53,17 +53,17 @@
   "segments": [
     {
       "from": 160,
-      "to": 347,
+      "to": 264,
       "label": "Request"
     },
     {
-      "from": 382,
-      "to": 618,
+      "from": 272,
+      "to": 497,
       "label": "Shoot and push"
     },
     {
-      "from": 653,
-      "to": 729,
+      "from": 543,
+      "to": 674,
       "label": "Poll"
     }
   ],
@@ -79,151 +79,142 @@
     {
       "id": "m2",
       "from": "api",
-      "to": "client",
+      "to": "store",
       "y": 198,
-      "label": "500 trigger_unwritable",
-      "variant": "return",
-      "note": "No row is created, so nothing waits"
+      "label": "request row, expires in 90 s",
+      "variant": "default"
     },
     {
       "id": "m3",
       "from": "api",
-      "to": "share",
-      "y": 253,
-      "label": "trigger with request id",
+      "to": "queue",
+      "y": 226,
+      "label": "enqueue request id",
       "variant": "default"
     },
     {
       "id": "m4",
       "from": "api",
-      "to": "store",
-      "y": 281,
-      "label": "request row, expires in 90 s",
-      "variant": "default"
-    },
-    {
-      "id": "m5",
-      "from": "api",
       "to": "client",
-      "y": 309,
+      "y": 254,
       "label": "202 id, 90 s to live",
       "variant": "return"
     },
     {
-      "id": "m6",
-      "from": "share",
+      "id": "m5",
+      "from": "queue",
       "to": "tool",
-      "y": 337,
-      "label": "the tool picks it up",
-      "variant": "dashed",
-      "note": "A file drop passes a network owner"
+      "y": 282,
+      "label": "POST /capture, bearer, 5 s",
+      "variant": "default",
+      "note": "One at a time in created order"
     },
     {
-      "id": "m7",
+      "id": "m6",
       "from": "tool",
       "to": "api",
-      "y": 392,
+      "y": 337,
       "label": "POST /evidence/screenshot",
       "variant": "security"
     },
     {
-      "id": "m8",
+      "id": "m7",
       "from": "api",
       "to": "tool",
-      "y": 420,
+      "y": 365,
       "label": "401, 404 or 409",
       "variant": "return",
       "note": "bad_service_token, unknown_request, expired"
     },
     {
-      "id": "m9",
+      "id": "m8",
       "from": "api",
       "to": "evidence",
-      "y": 486,
+      "y": 431,
       "label": "hash and store the PNG",
+      "variant": "default"
+    },
+    {
+      "id": "m9",
+      "from": "api",
+      "to": "store",
+      "y": 459,
+      "label": "served_evidence_id, served_at",
       "variant": "default"
     },
     {
       "id": "m10",
       "from": "api",
-      "to": "store",
-      "y": 514,
-      "label": "served_evidence_id, served_at",
-      "variant": "default"
-    },
-    {
-      "id": "m11",
-      "from": "api",
       "to": "tool",
-      "y": 542,
+      "y": 487,
       "label": "201 sha256",
       "variant": "return",
       "note": "The same evidence path as a site photo"
     },
     {
-      "id": "m12",
+      "id": "m11",
       "from": "client",
       "to": "api",
-      "y": 608,
+      "y": 553,
       "label": "GET /requests/{id}, poll",
       "variant": "emphasis",
       "note": "Every 2 s until expiry"
     },
     {
+      "id": "m12",
+      "from": "api",
+      "to": "client",
+      "y": 608,
+      "label": "pending",
+      "variant": "return"
+    },
+    {
       "id": "m13",
       "from": "api",
       "to": "client",
-      "y": 663,
-      "label": "pending",
+      "y": 636,
+      "label": "ready, with sha256",
       "variant": "return"
     },
     {
       "id": "m14",
       "from": "api",
       "to": "client",
-      "y": 691,
-      "label": "ready, with sha256",
-      "variant": "return"
-    },
-    {
-      "id": "m15",
-      "from": "api",
-      "to": "client",
-      "y": 719,
+      "y": 664,
       "label": "expired, no hash",
       "variant": "return",
-      "note": "No failed state: the Hub cannot see the tool"
+      "note": "Tool down stays pending then expires"
     }
   ],
   "activations": [
     {
       "participant": "client",
       "from": 162,
-      "to": 727,
+      "to": 672,
       "type": "frontend"
     },
     {
       "participant": "api",
       "from": 162,
-      "to": 727,
+      "to": 672,
       "type": "backend"
     },
     {
-      "participant": "share",
-      "from": 245,
-      "to": 345,
-      "type": "external"
+      "participant": "queue",
+      "from": 218,
+      "to": 290,
+      "type": "backend"
     },
     {
       "participant": "tool",
-      "from": 329,
-      "to": 550,
+      "from": 274,
+      "to": 495,
       "type": "external"
     },
     {
       "participant": "store",
-      "from": 273,
-      "to": 522,
+      "from": 190,
+      "to": 467,
       "type": "database"
     }
   ],
@@ -232,15 +223,15 @@
       "dot": "emerald",
       "title": "Two legs on purpose",
       "items": [
-        "The trigger travels through the share, because it is allowed",
+        "The trigger goes out over HTTP through a Hub FIFO queue",
         "The image comes back over HTTP, where a timestamp is worth having"
       ]
     },
     {
       "dot": "amber",
-      "title": "Silent by design",
+      "title": "Simple queue first",
       "items": [
-        "The Hub cannot observe the tool failing, so it never says why",
+        "Single sender, one call at a time, no Hub retry",
         "Three states: pending, ready, expired",
         "The engineer looks at the screenshot before accepting it"
       ]
