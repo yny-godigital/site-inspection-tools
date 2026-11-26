@@ -2,9 +2,9 @@
 
 > Reference annex to the plan pack. The plan (`../00-index.md`) is the single source of truth: on scope, schedule and estimates the plan applies; on routes and payloads the interface spec in this folder applies.
 
-One folder, twelve artefacts: nine diagrams, one brief, one interface spec, one build plan.
+One folder, thirteen artefacts: nine diagrams and four documents — the brief, the interface spec, the build plan and the deferred register.
 
-Built 24 November 2026 from the architecture alignment interview. Revised the same day when the delivery model changed to web-first.
+Built 24 November 2026 from the architecture alignment interview. Revised the same day when the delivery model changed to web-first, and again on 26 November 2026 when the screenshot trigger moved from a file share to HTTP through a Hub queue.
 
 Scope is v1, the December PoC: one site, one SAT, Cx2 and Cx3, two or three engineers, client unnamed.
 
@@ -25,13 +25,13 @@ That is a smaller claim than the earlier documents made, and it is the true one.
 1. [Who touches it](context.html): actors, external systems, and the boundary. Start here.
 2. [Deployment on site](deployment.html): machines, stores, the no-internet line, and the manual upload into ACC.
 3. [Components and the one seam](components.html): browser client, Hub API, and the store that v2 will swap.
-4. [Step states](step-states.html): open, claimed, in progress, submitted, complete, plus lease expiry.
+4. [Step states](step-states.html): open, claimed, in progress, submitted, plus lease expiry.
 5. [Sealing and editions](editions.html): a person seals one form, a compile never changes state.
 
 **Sequence**
 
 6. [Capture and submit one step](sequence.html): claim, photo upload, screenshot, record submit.
-7. [The screenshot integration](screenshot.html): trigger out through the share, image back over HTTP.
+7. [The screenshot integration](screenshot.html): trigger out over HTTP through the Hub queue, image back over HTTP.
 8. [Compile and collect the bundle](compile.html): a job, then a download by a person.
 9. [Open the app the next morning](resume.html): session, grid, and what happened to yesterday's claim.
 
@@ -130,7 +130,7 @@ There is AI budget to delegate coding to agents. It changes which line binds, an
 
 ## Still open
 
-1. **Step-list loading.** How instruments and tags arrive: fixed-column import, typed entry, or something else. Deferred by decision; it does not change the `steps` shape.
+1. **Step-list loading.** Decided: a fixed-column spreadsheet import (R63, WP-1.5.8). Still open: which document wins when the list and the drawings disagree (`O13`).
 2. **ACC bundle tree and metadata.** Provisional and behind `bundle.layout.json`; the uploader confirms it. The manifest is not provisional.
 3. **Wi-Fi client isolation, in writing.** Wi-Fi is load bearing, so this is a harder blocker than before. No code fallback exists.
 4. **Capture tool change.** Accept a request id, POST the PNG with a service token, keep writing locally. Owner and repo agreed; missing are a delivery date and a test target that is not the live control room PC.

@@ -139,7 +139,7 @@ Pinned means expensive to reverse. Every row cites a source or it would be an as
 | v1 ends at a sealed bundle; no e-signature and no in-app acceptance record | architecture README D20; scope interview Q8 |
 | One bundle per SAT, containing every form and its evidence, with a manifest that flags incomplete steps | scope interview Q15 and Q16 |
 | Compile runs on the Hub on site, with no internet, using a local xlsx writer | scope interview Q18 |
-| The step list is project data loaded into `steps` at setup, not schema | interface spec, Glossary and Open items |
+| The step list is project data loaded into `steps` at setup, not schema | interface spec, Glossary; R63 |
 | One role, one capability map, no RBAC, one SAT per Hub, so form routes carry no SAT id | scope interview Q9; assumption A6 |
 | Runtime has no AI, no OCR and no model call; "AI application" is not the title of the deliverable | scope interview Q11 and Q12 |
 

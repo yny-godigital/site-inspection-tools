@@ -2,7 +2,7 @@
 
 > Reference annex to the plan pack. The plan (`../00-index.md`) is the single source of truth: the work-package acceptance tests in `05` condense these task tests, and on any difference the plan applies.
 
-Status: draft, 25 November 2026. Written from the [interface spec](architecture-v1-interface-spec.md) and the [architecture package](architecture/README.md). No effort estimates and no dates: this fixes **what is built, in what order, and how each item is known to be done**.
+Status: draft, 25 November 2026. Written from the [interface spec](architecture-v1-interface-spec.md) and the [architecture package](README.md). No effort estimates and no dates: this fixes **what is built, in what order, and how each item is known to be done**.
 
 Written for two developers splitting the build, and written so a coding agent can take one task without inventing requirements.
 
@@ -22,7 +22,7 @@ These are inputs from other people. A task that needs one is marked **blocked**.
 | Wi-Fi client isolation confirmed in writing | Site network owner | Nothing can be tested on site. Design does not change; the pilot cannot run. |
 | Capture tool change: date and a test target that is not the live control PC | Jien Ming | Screenshot integration can be built and tested against a stub; the real leg stays unproven. |
 | ACC bundle tree and file naming confirmed | Whoever uploads to ACC | Build against `bundle.layout.json` and the spec's provisional tree; the change is a config edit. |
-| Step-list loading decision | Deferred | A1 accepts a hand-made import fixture; the loader is a separate task when decided. |
+| Instrument list and its columns | Engineer | A1 and A5 accept a hand-made import fixture; WP-1.5.8 builds the fixed-column importer (R63). |
 | Hub machine and fixed LAN address | YNY | Blocks the rehearsal, not the build. |
 
 ## Global definition of done
@@ -237,7 +237,7 @@ Printed checklist: install, accounts, fixed address, Hub address, tool address a
 ## What would change this plan
 
 - **The stack changes to .NET.** A1–A4 and D1–D2 are rewritten; everything else is language-neutral.
-- **Step-list loading needs a parser.** A small task becomes a module, and the risk the brief deliberately removed comes back.
+- **The instrument list arrives as a scan or PDF.** The fixed-column import stops being the main path (A12), P6 is promoted, and F0–F6 gain an owner, a date and a quality threshold.
 - **The capture tool's contract changes** (it starts reporting errors, or it cannot post over HTTP). C3–C4 change; the three-state model may gain a fourth.
 - **Document ingestion is promoted.** The F series gains an owner, a date and a quality threshold first; nothing else moves, because it feeds the setup import rather than the Hub.
 - **Offline becomes a v1 requirement.** The plan grows a local store, sync and merge, and D9's six rules stop being cheap insurance and become the main design.

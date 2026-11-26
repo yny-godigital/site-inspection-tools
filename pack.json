@@ -7,31 +7,31 @@
   "docs": [
     {
       "file": "00-index.md",
-      "sha256": "35b86b958ed14adb4029fb33532b9eacf070b923fed55d24686925371613fc90"
+      "sha256": "0f43dbf7da8d6b7f9bbf660acaf69b8b4f03e953317b761951f1f7e32c977037"
     },
     {
       "file": "01-scope-statement.md",
-      "sha256": "5b1d696c538afb8540ade23055d78d73d389700c67194c4b2dc6f4050be0b9ee"
+      "sha256": "d9430fbaf345e58734af4394c50164fa47d628cff4596968124259932fa94f4e"
     },
     {
       "file": "02-requirements.md",
-      "sha256": "f4b1e3c7aa773a8d432389ad04fe2ed96b5f213b4d6b2c1c002f4e678beda15c"
+      "sha256": "1ff8199d0e2db7e278c27f5a14aebdf421ce99f5158f6cfb58ed745373d5df16"
     },
     {
       "file": "03-architecture.md",
-      "sha256": "503e20d7efddd01ae4f48eefb0c9675af8918d6104575e4929ba79a7a36d489e"
+      "sha256": "f83025233836434ec5875040c34053fbfd8fbbfbc039337b9081dacf89d52a52"
     },
     {
       "file": "04-design.md",
-      "sha256": "1f61cac04bbc4357ab3cd8c2ff90903a71385d609dc865586aa04bf80ac85f76"
+      "sha256": "9d78dbe9ca0e9af21741cf257e8c7df85329fe647d12f0eac601d0f684ecd2de"
     },
     {
       "file": "05-phases-wbs.md",
-      "sha256": "a65a1932b693ec82a66c3b9b64a406c73a008bb5bdee03b48c7cc700e5db36e0"
+      "sha256": "602a38cf68341865f89b51969399d526108cccc86dedcb269088435108744b8a"
     },
     {
       "file": "06-delegated-and-open.md",
-      "sha256": "8688c3167c5bbd5878b52fd97fe3acbeffc97602fa2f68bd727e3bba9679aa2a"
+      "sha256": "e8f9afb200ae8182b47eaf9ba11f88634e0cf2c8c882ba93498502c7f7746aee"
     }
   ],
   "requirements": [
@@ -130,9 +130,9 @@
     },
     {
       "id": "R10",
-      "text": "A write carrying a stale revision is refused with the current revision.",
+      "text": "A write is accepted only from the account holding the step's lease, at the current revision.",
       "priority": "M",
-      "acceptance": "A second write at the same `expected_revision` returns 409 `stale_revision` with `current`.",
+      "acceptance": "A second write at the same `expected_revision` returns 409 `stale_revision` with `current`; a write from an account that does not hold the lease returns 409 `not_claimed`.",
       "source": "interface spec, Step upsert",
       "work_packages": [
         "WP-1.2.5"
@@ -294,7 +294,7 @@
       "text": "Identical bytes are stored once, under a file name equal to their hash, and reported as already present.",
       "priority": "M",
       "acceptance": "The same file uploaded twice returns 409 `already_exists` and one file exists under `evidence/`.",
-      "source": "interface spec, Evidence upload; decision D11",
+      "source": "interface spec, Evidence upload; architecture D11",
       "work_packages": [
         "WP-1.3.1"
       ]
@@ -314,16 +314,16 @@
       "text": "A 1000 px document copy is derived, regenerable, and EXIF-oriented; a format that cannot be converted is refused rather than stored.",
       "priority": "M",
       "acceptance": "A portrait phone photo lands upright in original and copy; deleting the copy and re-running regenerates it; an unconvertible file returns 415.",
-      "source": "build plan C2; decision D3",
+      "source": "build plan C2; architecture D3",
       "work_packages": [
         "WP-1.3.2"
       ]
     },
     {
       "id": "R29",
-      "text": "A screenshot request writes one trigger file and returns a request id, or refuses and creates no row when the share cannot be written.",
+      "text": "A screenshot request creates a row, enqueues a Hub-to-tool HTTP call, and returns a request id. If the tool cannot be reached, the request stays pending until expiry; if the queue is full, the request is refused and no row is created.",
       "priority": "M",
-      "acceptance": "With the share read-only, the call returns 500 `trigger_unwritable` and the request table is unchanged.",
+      "acceptance": "With the tool stopped, the call still returns 202 and the state reads expired after 90 s with no job running; at queue depth 100 the next call returns 503 `queue_full` and the request table is unchanged.",
       "source": "interface spec, Screenshot",
       "work_packages": [
         "WP-1.3.5"
@@ -334,7 +334,7 @@
       "text": "Request state is derived as pending, ready or expired on the server clock, and a late post from the tool is refused.",
       "priority": "M",
       "acceptance": "No post within the deadline and the state reads expired with no job running; a post after the deadline returns 409 `expired`.",
-      "source": "interface spec, Screenshot; decision D19",
+      "source": "interface spec, Screenshot; architecture D19",
       "work_packages": [
         "WP-1.3.5"
       ]
@@ -351,7 +351,7 @@
     },
     {
       "id": "R32",
-      "text": "The capture tool change accepts a request id from the share, posts the PNG to the Hub, and keeps writing its local copy as before.",
+      "text": "The capture tool change exposes `POST /capture`, accepts a request id over HTTP, posts the PNG to the Hub, and keeps writing its local copy as before.",
       "priority": "M",
       "acceptance": "On a test target, one request produces one stored screenshot and still leaves a file in the tool's own directory.",
       "source": "interface spec, Screenshot",
@@ -364,7 +364,7 @@
       "text": "In-flight captures and one in-flight form survive a page reload in the browser spool, and only chosen captures leave the device.",
       "priority": "M",
       "acceptance": "Five captures, two chosen, two uploads issued; a reload before save restores the spool; a discarded shot appears in no request.",
-      "source": "build plan C5; decision D10",
+      "source": "build plan C5; architecture D10",
       "work_packages": [
         "WP-1.3.3"
       ]
@@ -374,7 +374,7 @@
       "text": "Capture opens the device's own camera app through a file input, and the tablet is the tested path.",
       "priority": "M",
       "acceptance": "On the nominated tablet, the camera opens and returns a photo with no permission prompt and no video stream in the page.",
-      "source": "decision D14",
+      "source": "architecture D14",
       "work_packages": [
         "WP-1.3.3"
       ]
@@ -394,7 +394,7 @@
       "text": "The template engine renders a form from its pinned schema, in configured column order, one row per step, deterministically.",
       "priority": "M",
       "acceptance": "A golden-file test renders the fixture schema twice and gets byte-identical output.",
-      "source": "build plan D1; decision D4",
+      "source": "build plan D1; architecture D4",
       "work_packages": [
         "WP-1.4.1"
       ]
@@ -495,7 +495,7 @@
       "text": "No SQL sits outside the repository module, and no numeric literal above 60 sits outside the configuration module.",
       "priority": "M",
       "acceptance": "A grep test over route and service files finds neither.",
-      "source": "build plan A2, A4; decision D18",
+      "source": "build plan A2, A4; architecture D18",
       "work_packages": [
         "WP-1.1.2",
         "WP-1.1.4"
@@ -526,7 +526,7 @@
       "text": "Evidence bytes live as files named by hash and never in the database.",
       "priority": "M",
       "acceptance": "The database dump contains no blob column holding image bytes; `evidence/` holds the files.",
-      "source": "decision D12; interface spec, Schema",
+      "source": "architecture D12; interface spec, Schema",
       "work_packages": [
         "WP-1.1.3",
         "WP-1.3.1"
@@ -557,7 +557,7 @@
       "text": "Our standard SAT format is defined once as a master record and loaded through the setup import.",
       "priority": "M",
       "acceptance": "The format renders a workbook with the agreed columns, slots and sections, and matches the agreed specimen workbook.",
-      "source": "alignment 2026-11-26 (A11); decisions D4, D16; build plan A5",
+      "source": "alignment 2026-11-26 (A11); architecture D4, D16; build plan A5",
       "work_packages": [
         "WP-1.1.6",
         "WP-1.5.4"
@@ -630,7 +630,7 @@
       "text": "Three devices and up to three engineers share one SAT, with one lease holder per step.",
       "priority": "M",
       "acceptance": "Three browsers work the same form at once and no step is ever claimed twice.",
-      "source": "scope interview Q9; decision D8",
+      "source": "scope interview Q9; architecture D8",
       "work_packages": [
         "WP-1.2.4"
       ]
@@ -660,7 +660,7 @@
       "text": "The Hub runs on Node 22 LTS on Windows, serves HTTP on the site LAN, and needs no internet at run time.",
       "priority": "M",
       "acceptance": "The install runs with the network cable out and the LAN up, and the app serves the grid.",
-      "source": "build plan A1, A7; decision D5",
+      "source": "build plan A1, A7; architecture D5",
       "work_packages": [
         "WP-1.1.1",
         "WP-1.1.7"
@@ -943,7 +943,7 @@
         "WP-1.2.4"
       ],
       "phase": "P1",
-      "acceptance": "each refusal carries what is needed to act, and three accepted writes leave the revision at 4"
+      "acceptance": "each refusal carries what is needed to act, a write from a non-holder is 409 not_claimed, and three accepted writes leave the revision at 4"
     },
     {
       "id": "WP-1.2.6",
@@ -1073,7 +1073,7 @@
     },
     {
       "id": "WP-1.3.5",
-      "title": "Screenshot request and derived status",
+      "title": "Screenshot request and derived status, Hub FIFO queue",
       "traces": [
         "R29",
         "R30"
@@ -1085,7 +1085,7 @@
         "WP-1.3.1"
       ],
       "phase": "P2",
-      "acceptance": "an unwritable share returns 500 trigger_unwritable and creates no row, state reaches expired on the clock with no job, and a late post is 409 expired"
+      "acceptance": "tool stopped still returns 202 then reads expired after 90 s, three concurrent go out in order, a full queue is 503 with no row, and a late post is 409 expired"
     },
     {
       "id": "WP-1.3.6",

@@ -6180,7 +6180,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
     <!-- Main Diagram -->
     <div class="diagram-container" data-detail-level="read"
          data-preset-badge-editorial-plate="ARCHIFY / PLATE 04">
-      <svg viewBox="0 0 920 684" data-sequence-column-fit="spread" data-reader-fit="width-first" role="img" lang="en" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="classic" data-parent-href="index.html" data-quality-profile="showcase" data-motion-choreography="sequence">
+      <svg viewBox="0 0 920 778" data-sequence-column-fit="spread" data-reader-fit="width-first" role="img" lang="en" aria-labelledby="archify-diagram-title archify-diagram-description" data-animation="trace" data-preset="classic" data-parent-href="index.html" data-quality-profile="showcase" data-motion-choreography="sequence">
         <title id="archify-diagram-title">S5: capture to stored evidence</title>
         <desc id="archify-diagram-description">Spool, reload, hash, deduplicate, one image per slot per revision</desc>
         <!-- Definitions -->
@@ -6210,25 +6210,25 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
         <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="1" x="48" y="327" width="824" height="48" rx="10" class="c-lane" stroke-width="1"/>
 
-        <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="2" x="48" y="421" width="824" height="153" rx="10" class="c-lane" stroke-width="1"/>
+        <rect data-graph-role="structural-frame" data-composition-frame-kind="segment" data-composition-frame-id="2" x="48" y="421" width="824" height="236" rx="10" class="c-lane" stroke-width="1"/>
 
         <!-- Lifelines -->
-        <path d="M 116.5 142 L 116.5 588" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 258.3 142 L 258.3 588" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 400.1 142 L 400.1 588" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 541.9000000000001 142 L 541.9000000000001 588" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 683.7 142 L 683.7 588" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
-        <path d="M 825.5 142 L 825.5 588" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 116.5 142 L 116.5 682" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 258.3 142 L 258.3 682" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 400.1 142 L 400.1 682" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 541.9000000000001 142 L 541.9000000000001 682" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 683.7 142 L 683.7 682" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
+        <path d="M 825.5 142 L 825.5 682" class="a-default" stroke-width="0.8" stroke-dasharray="3,7"/>
 
         <!-- Activations -->
         <rect x="111.5" y="162" width="10" height="127" rx="3" class="c-mask"/>
         <rect x="111.5" y="162" width="10" height="127" rx="3" class="c-external" stroke-width="1"/>
-        <rect x="253.3" y="162" width="10" height="410" rx="3" class="c-mask"/>
-        <rect x="253.3" y="162" width="10" height="410" rx="3" class="c-frontend" stroke-width="1"/>
+        <rect x="253.3" y="162" width="10" height="493" rx="3" class="c-mask"/>
+        <rect x="253.3" y="162" width="10" height="493" rx="3" class="c-frontend" stroke-width="1"/>
         <rect x="395.1" y="190" width="10" height="71" rx="3" class="c-mask"/>
         <rect x="395.1" y="190" width="10" height="71" rx="3" class="c-database" stroke-width="1"/>
-        <rect x="536.9000000000001" y="301" width="10" height="271" rx="3" class="c-mask"/>
-        <rect x="536.9000000000001" y="301" width="10" height="271" rx="3" class="c-backend" stroke-width="1"/>
+        <rect x="536.9000000000001" y="301" width="10" height="354" rx="3" class="c-mask"/>
+        <rect x="536.9000000000001" y="301" width="10" height="354" rx="3" class="c-backend" stroke-width="1"/>
 
         <!-- Messages -->
         <g data-edge-from="engineer" data-edge-to="client" data-edge-label="tap capture" data-edge-key="0" data-edge-id="m1">
@@ -6321,8 +6321,25 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
           <rect x="318.20000000000005" y="544" width="163.79999999999998" height="18" rx="3" class="c-mask"/>
           <text x="400.1" y="554" class="t-muted" font-size="11" text-anchor="middle">201 sha256, bytes, size</text>
         </g>
-        <rect data-detail="context" data-graph-role="message-note-background" x="275.3" y="571.6" width="109" height="16.399999999999977" rx="2" class="c-mask" pointer-events="none"/>
         <text data-detail="context" x="277.3" y="582" class="t-muted" font-size="7">The file name is its hash</text>
+        </g>
+
+        <g data-edge-from="client" data-edge-to="api" data-edge-label="GET /evidence/{sha256}" data-edge-key="11" data-edge-id="m12">
+          <path data-composition-edge-from="client" data-composition-edge-to="api" data-composition-edge-id="m12" data-composition-points="265.3,619;534.9000000000001,619" d="M 265.3 619 L 534.9000000000001 619" class="a-default" data-animate="edge" style="--step:11" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="321.5" y="599" width="157.2" height="18" rx="3" class="c-mask"/>
+          <text x="400.1" y="609" class="t-muted" font-size="11" text-anchor="middle">GET /evidence/{sha256}</text>
+        </g>
+        </g>
+
+        <g data-edge-from="api" data-edge-to="client" data-edge-label="200, the stored image" data-edge-key="12" data-edge-id="m13">
+          <path data-composition-edge-from="api" data-composition-edge-to="client" data-composition-edge-id="m13" data-composition-points="534.9000000000001,647;265.3,647" d="M 534.9000000000001 647 L 265.3 647" class="a-default" data-animate="edge" style="--step:12" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
+        <g data-detail="context">
+          <rect x="324.8" y="627" width="150.6" height="18" rx="3" class="c-mask"/>
+          <text x="400.1" y="637" class="t-muted" font-size="11" text-anchor="middle">200, the stored image</text>
+        </g>
+        <rect data-detail="context" data-graph-role="message-note-background" x="275.3" y="654.6" width="109" height="27.399999999999977" rx="2" class="c-mask" pointer-events="none"/>
+        <text data-detail="context" x="277.3" y="665" class="t-muted" font-size="7"><tspan x="277.3" dy="0">The read half of the same</tspan><tspan x="277.3" dy="11">blob</tspan></text>
         </g>
 
         <!-- Segment Labels -->
@@ -6414,22 +6431,22 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
         <!-- Legend -->
         <g data-legend="">
-          <text x="40" y="610" class="t-primary" font-size="12" font-weight="650">Legend</text>
-          <g data-legend-semantic-kind="emphasis" data-legend-x="40" data-legend-baseline="630" data-legend-width="118">
-            <path d="M 40 627 L 74 627" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
-            <text x="83" y="630" class="t-muted" font-size="10" font-weight="500">main request</text>
+          <text x="40" y="704" class="t-primary" font-size="12" font-weight="650">Legend</text>
+          <g data-legend-semantic-kind="emphasis" data-legend-x="40" data-legend-baseline="724" data-legend-width="118">
+            <path d="M 40 721 L 74 721" class="a-emphasis" stroke-width="1.8" marker-end="url(#arrowhead-emphasis)"/>
+            <text x="83" y="724" class="t-muted" font-size="10" font-weight="500">main request</text>
           </g>
-          <g data-legend-semantic-kind="return" data-legend-x="180" data-legend-baseline="630" data-legend-width="81">
-            <path d="M 180 627 L 214 627" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
-            <text x="223" y="630" class="t-muted" font-size="10" font-weight="500">return</text>
+          <g data-legend-semantic-kind="return" data-legend-x="180" data-legend-baseline="724" data-legend-width="81">
+            <path d="M 180 721 L 214 721" class="a-default" stroke-width="1.4" stroke-dasharray="3,5" marker-end="url(#arrowhead)"/>
+            <text x="223" y="724" class="t-muted" font-size="10" font-weight="500">return</text>
           </g>
-          <g data-legend-semantic-kind="dashed" data-legend-x="283" data-legend-baseline="630" data-legend-width="112">
-            <path d="M 283 627 L 317 627" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
-            <text x="326" y="630" class="t-muted" font-size="10" font-weight="500">async trace</text>
+          <g data-legend-semantic-kind="dashed" data-legend-x="283" data-legend-baseline="724" data-legend-width="112">
+            <path d="M 283 721 L 317 721" class="a-dashed" stroke-width="1.4" marker-end="url(#arrowhead-dashed)"/>
+            <text x="326" y="724" class="t-muted" font-size="10" font-weight="500">async trace</text>
           </g>
-          <g data-legend-semantic-kind="default" data-legend-x="417" data-legend-baseline="630" data-legend-width="87">
-            <path d="M 417 627 L 451 627" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
-            <text x="460" y="630" class="t-muted" font-size="10" font-weight="500">message</text>
+          <g data-legend-semantic-kind="default" data-legend-x="417" data-legend-baseline="724" data-legend-width="87">
+            <path d="M 417 721 L 451 721" class="a-default" stroke-width="1.4" marker-end="url(#arrowhead)"/>
+            <text x="460" y="724" class="t-muted" font-size="10" font-weight="500">message</text>
           </g>
         </g>
       </svg>

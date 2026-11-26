@@ -20,7 +20,7 @@ source_artifacts:
 ## Trace summary
 
 - Requirements: `66` · covered: `66` · uncovered: `0`
-- Work packages: `51` · enablers: `3` · estimates: `65.5–105` dev-days (about `85`), of which `17–25` is conditional P6 work; the core commitment is `48.5–80` (about `64`), plus `10.5–13` engineer-days and `7–12` platform-days
+- Work packages: `51` · enablers: `3` · estimates: `65.5–105` dev-days (about `85`), of which `17–25` is conditional P6 work; the core commitment is `48.5–80` (about `64`), plus `8.5–10` engineer-days and `7–12` platform-days
 - Capacity: 2.0 developer FTE gives about 40 dev-days in the 25 working days available. Even the core low band needs 6.1 weeks, so the date is not reachable at 2.0 FTE. See `05 § Capacity check` and `O15`
 - Assumptions: `11` · Open questions: `13` · Delegated decisions: `8`
 - Authority: this plan is the single source of truth. On scope, schedule and estimates this plan applies; on routes and payloads the interface spec's wire text applies.

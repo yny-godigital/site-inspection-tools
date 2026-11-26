@@ -75,11 +75,11 @@ One real SAT, at one site, captured on the day it is tested, compiled on the sam
 | Kind | Value | Hard or soft |
 |---|---|---|
 | Deadline | 2026-12-31, the witnessed site day | hard |
-| Calendar as at 2026-11-25 | 25 working days to the deadline, about 5.0 weeks | hard fact |
+| Calendar as at 2026-11-26 | 25 working days to the deadline, about 5.0 weeks | hard fact |
 | Budget | About MYR 114,820 total, of which MYR 26,500 hardware and licences. It traces to the source package's 62 dev-days; the estimate here is 64 core, band 48.5-80 | soft |
 | Team — developer | 2.0 FTE, TypeScript | hard |
 | Schedule capacity | 2.0 developer FTE supplies about 40 dev-days in the 5.0 week window, at 4 productive days per FTE-week. The core estimate is 64, and even its 48.5 low band needs 6.1 weeks. Fitting 64 into 5.0 weeks needs 3.2 FTE. This is O15 | hard fact |
-| Team — engineer | 12 engineer-days, band 11-13, at about 0.75 FTE, on the critical path at the end | hard |
+| Team — engineer | 10.5-13 engineer-days in total, of which 8.5-10 are on the core P1-P5 path, at about 0.6 FTE, on the critical path at the end | hard |
 | Team — platform | 10 platform-days, band 7-12, at 0.3 FTE | hard |
 | Site access | The client's site, induction, and a nominated signing engineer. Not in our control | hard |
 | Network | Site Wi-Fi must exist, reach the control room, and permit tablet-to-Hub traffic. Written confirmation is O3 | hard |

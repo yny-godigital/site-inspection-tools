@@ -23,7 +23,7 @@ Solution design at the level a receiving team cannot guess: the flows, the state
 | 5 | engineer | picks the captures to keep and assigns each to a slot | one image per slot; a discarded shot never leaves the device | a second image for a filled slot asks for confirmation before it replaces the spooled file |
 | 6 | engineer | types the readings | local validation against the pinned schema, warnings visible, save enabled | — |
 | 7 | client | uploads each kept capture | verifies the declared hash, enforces the cap before reading the body, stores bytes under their hash, returns the hash | 413 above 8 MB; 409 `already_exists` is treated as success; 422 `slot_occupied` names the slot |
-| 8 | engineer | saves | validates values against the pinned schema, checks every evidence hash exists, increments the revision, writes an audit row | 409 `stale_revision` carries the current revision and the client offers a reload, not a merge; 422 `unknown_evidence` names the missing hashes |
+| 8 | engineer | saves | validates values against the pinned schema, checks every evidence hash exists, increments the revision, writes an audit row | 409 `stale_revision` carries the current revision and the client offers a reload, not a merge; 409 `not_claimed` when another account holds the step; 422 `unknown_evidence` names the missing hashes |
 | 9 | engineer | submits | marks submitted, computes flags from empty required columns and empty slots, writes an audit row | not the lease holder: 409 `not_claimed`; old revision: 409 `stale_revision` with the current revision; already submitted: the same result returned again |
 
 ### F3 — Ask for a SCADA screenshot
@@ -235,6 +235,9 @@ sequenceDiagram
       API-->>C: 201 {sha256, bytes, width, height}
     end
   end
+  E->>C: open the stored image
+  C->>API: GET /evidence/{sha256}
+  API-->>C: 200, the stored image
   Note over API,EV: identical bytes are one file, deduplicated by address<br/>no image ever lands in the database
 ```
 
@@ -252,6 +255,8 @@ sequenceDiagram
   alt expected_revision is stale
     API-->>C: 409 stale_revision {current}
     Note over C: offer a reload, never a silent merge
+  else the caller does not hold the lease
+    API-->>C: 409 not_claimed {claimed_by, claimed_until}
   else a value violates the schema
     API-->>C: 422 invalid_values {column ids}
   else an evidence hash is unknown to the Hub
@@ -621,9 +626,9 @@ Every route in the interface spec appears in at least one diagram. This table is
 | `POST /steps/{stepId}/submit` | S7, S14 | `GET /bundle/{satId}` | S11, S14 |
 | `POST /evidence` | S5 | `GET /summary/daily` | S12 |
 | `HEAD /evidence/{sha256}` | S5 | commands and human acts | S12, S13, S14, S15, S16, S17 |
-| `GET /evidence/{sha256}` | S5, S10 | | |
+| `GET /evidence/{sha256}` | S5 | | |
 
-`GET /evidence/{sha256}` is the read half an engineer uses to look at a stored image before accepting a step; it is shown inside S10 where the screenshot arrives, and it takes the same route in S5.
+`GET /evidence/{sha256}` is the read half an engineer uses to look at a stored image before accepting a step; it is shown in S5, after the upload.
 
 ## States
 
@@ -652,7 +657,7 @@ Screenshot request state is derived from one row and the server clock: `pending`
 
 | Action | anonymous | engineer (signed in) | service principal | signer (outside the app) |
 |---|---|---|---|---|
-| read the app and sign in | yes | yes | no | yes, if they have an account |
+| read the app and sign in | yes | yes | no | no |
 | read grid and form | no | yes | no | no |
 | claim, renew, release, submit | no | only while holding the lease, or to take a free step | no | no |
 | write a step | no | only while holding the lease and only while the form is draft or amended | no | no |
@@ -671,7 +676,7 @@ One role in v1. The `role` column exists so v2 adds data, not schema. There is n
 
 | Rule | Value | Source |
 |---|---|---|
-| lease length | 12 hours from the server clock | R7, decision D8 |
+| lease length | 12 hours from the server clock | R7, architecture D8 |
 | screenshot expiry | 90 seconds; client polls every 2 seconds | R30 |
 | session length | 12 hours sliding; a restart ends all sessions | R3 |
 | image long edge | 3000 px, re-encoded in the client | R60 |
@@ -680,7 +685,7 @@ One role in v1. The `role` column exists so v2 adds data, not schema. There is n
 | tool PNG cap | 10 MB | R60 |
 | document copy | 1000 px derivative, derived by the Hub | R28 |
 | images per slot | one per revision; a second needs a new revision and replaces the spool | R27 |
-| evidence retention | append-only; no file overwritten or deleted | R61, D11 |
+| evidence retention | append-only; no file overwritten or deleted | R61, architecture D11 |
 | step values | JSON keyed by schema column id of the pinned version | interface spec, Step record |
 | seals per form | one per edition; editions are whole-form and never partial | R21 |
 | compile preconditions | every form sealed, no open amendment, one run | R23 |

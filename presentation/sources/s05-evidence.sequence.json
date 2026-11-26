@@ -64,7 +64,7 @@
     },
     {
       "from": 421,
-      "to": 574,
+      "to": 657,
       "label": "Upload"
     }
   ],
@@ -170,6 +170,23 @@
       "label": "201 sha256, bytes, size",
       "variant": "return",
       "note": "The file name is its hash"
+    },
+    {
+      "id": "m12",
+      "from": "client",
+      "to": "api",
+      "y": 619,
+      "label": "GET /evidence/{sha256}",
+      "variant": "default"
+    },
+    {
+      "id": "m13",
+      "from": "api",
+      "to": "client",
+      "y": 647,
+      "label": "200, the stored image",
+      "variant": "return",
+      "note": "The read half of the same blob"
     }
   ],
   "activations": [
@@ -182,7 +199,7 @@
     {
       "participant": "client",
       "from": 162,
-      "to": 572,
+      "to": 655,
       "type": "frontend"
     },
     {
@@ -194,7 +211,7 @@
     {
       "participant": "api",
       "from": 301,
-      "to": 572,
+      "to": 655,
       "type": "backend"
     }
   ],

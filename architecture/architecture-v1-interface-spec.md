@@ -104,7 +104,7 @@ POST /requests/screenshot
 { "request_id": "rq_01H...", "expires_at": "2026-12-01T09:15:30Z" }
 ```
 
-The Hub creates the request row, enqueues a Hub-to-tool call carrying `request_id`, and returns. Queue is FIFO in memory, single sender, one call at a time. Send is `POST http://tool:8080/capture` with `request_id`, `tag`, `expires_at` and a bearer token, 5 s connect timeout. If the tool cannot be reached the request stays pending until expiry and the Hub log carries the error.
+The Hub creates the request row, enqueues a Hub-to-tool call carrying `request_id`, and returns. Queue is FIFO in memory, single sender, one call at a time. Send is `POST http://tool:8080/capture` with `request_id`, `tag`, `expires_at` and a bearer token, 5 s connect timeout. If the tool cannot be reached the request stays pending until expiry and the Hub log carries the error. The queue depth is 100; a request that arrives when it is full is refused with `503 queue_full` and no request row is created, so the engineer retries rather than waiting on a request that will never be sent.
 
 The tool is silent: its only obligation is the POST below. The Hub therefore never claims to know why a shot failed.
 
@@ -161,8 +161,11 @@ PUT /steps/st_7f3a
 
 200 OK  { "revision": 2, "stored_at": "2026-12-01T09:15:02Z" }
 409 stale_revision  { "current": 3 }
+409 not_claimed     { "claimed_by": "kai.xin", "claimed_until": "..." }
 422 unknown_evidence { "missing": ["7f22ab…9c1"] }
 ```
+
+`409 not_claimed` when the caller does not hold the step's lease, because a write from a non-holder would advance the revision under the holder's feet.
 
 `422 unknown_evidence` is the important one: a step may not reference bytes the Hub has not confirmed. That is the failure that otherwise produces a good-looking record with a missing photo.
 
@@ -336,7 +339,6 @@ CREATE TABLE screenshot_request (
   device_id           TEXT,
   created_at          TEXT NOT NULL,
   expires_at          TEXT NOT NULL,
-  trigger_name        TEXT,
   served_evidence_id  TEXT,         -- null until the tool posts the PNG
   served_at           TEXT
 );
@@ -400,7 +402,7 @@ CREATE TABLE compile_job (
 
 Bytes never enter these tables. Files live in `evidence/<sha256>` and `derived/<sha256>`. The `bytes` columns store file size, not file content.
 
-The step list is project data, not schema: it arrives as rows in `steps`, loaded at setup. How that load happens is deferred; see the open items.
+The step list is project data, not schema: it arrives as rows in `steps`, loaded at setup by the fixed-column spreadsheet import (R63). Which document wins when the list and the drawings disagree is `O13`.
 
 Form **state** is still derived, and that is on purpose:
 
@@ -581,10 +583,10 @@ Neither has been reviewed by eye since regeneration. The other seven diagrams we
 
 The deferred-to-v2 register lives in [decisions-and-open-items.md](decisions-and-open-items.md). What remains unresolved for v1 is listed here, each with an owner and a consequence:
 
-- **Step-list loading.** How the instruments and tags arrive (fixed-column import, typed entry, or something else). Deferred by decision; blocks nothing before build-order step 2, and the shape of the `steps` table does not change either way.
+- **Instrument-list conflicts (`O13`).** The list arrives as a fixed-column spreadsheet (R63). Which document wins when its tags, ranges or levels disagree with the drawings is still open.
 - **ACC bundle tree and metadata.** The tree above is provisional; the uploader confirms it. Blocks nothing, because the manifest is ours and the tree is one config file.
 - **Wi-Fi client isolation, in writing.** If tablets cannot reach the Hub, v1 does not work. No design fallback exists; this is a site fact, not a code question.
-- **Capture tool change.** It must accept a `request_id` from the share, POST the PNG with a service token, and keep writing locally. Owner and repository are agreed; what is missing is a delivery date and a test target that is not the live control room PC. On the critical path.
+- **Capture tool change.** It must accept a `request_id` over HTTP, POST the PNG with a service token, and keep writing locally. Owner and repository are agreed; what is missing is a delivery date and a test target that is not the live control room PC. On the critical path.
 - **Optional document ingestion (F0–F6 in the build plan).** Unbuilt and unscheduled: OCR on scanned pages, a model pass to reason over layout, then a mapping onto the schema and step-list shapes, emitted as a candidate CSV with provenance and committed by a person through the setup import. It never writes to the Hub. See [decisions-and-open-items.md](decisions-and-open-items.md).
 - **Sample SAT form document.** No longer a blocking dependency: the format is defined by the schema and the document is generated. A real layout and step list remain as swap-in validation for the master record.
 - **Hub hardware and site address.** Which laptop or mini PC, and the fixed LAN address the tablets use.

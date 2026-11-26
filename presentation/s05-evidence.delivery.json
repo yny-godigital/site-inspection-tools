@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "receiptId": "0b6d8713-f60b-42ce-9f35-7ddb8b6196db",
+  "receiptId": "541ec2ca-1cb4-4ad2-bcff-7a059aa4e3c3",
   "status": "current",
   "command": "deliver",
   "type": "sequence",
-  "input": "/home/ccw/.hermes/home-project-scale/workspace/project-scale/cost-estimation/v0_2/Pilot/plan-2026-11-25-sat-poc-v1/presentation/sources/s05-evidence.sequence.json",
-  "output": "/home/ccw/.hermes/home-project-scale/workspace/project-scale/cost-estimation/v0_2/Pilot/plan-2026-11-25-sat-poc-v1/presentation/s05-evidence.html",
+  "input": "/home/ccw/.hermes/home-project-scale/workspace/project-scale/pilot-site-inspection-tools/plan-2026-11-25-sat-poc-v1/presentation/sources/s05-evidence.sequence.json",
+  "output": "/home/ccw/.hermes/home-project-scale/workspace/project-scale/pilot-site-inspection-tools/plan-2026-11-25-sat-poc-v1/presentation/s05-evidence.html",
   "specification": {
-    "sha256": "dfed4390bdfd46610d1f04220929bf456e97efa91a7ac855264ebf47c09ce139",
-    "bytes": 5152
+    "sha256": "0f568c847c477dc1edcb0ad2b5c4c0c57d2dae6d138f9bf95e9fedb5e67dbfa9",
+    "bytes": 5516
   },
   "artifact": {
-    "sha256": "42894fb22bf2bcbca6bb8853c2ab5ba364888a096c0209ab86386edfb81b418c",
-    "bytes": 933631
+    "sha256": "a061fa06f0f4ccea306dcd3ef30bc1c78f43a235429834deb6cd06545df064e9",
+    "bytes": 935264
   }
 }

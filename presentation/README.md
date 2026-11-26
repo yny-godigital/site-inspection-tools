@@ -14,7 +14,7 @@ or live toggle.
 | `s02-morning-grid.html` | Open the app the next morning | `GET /sat/{satId}/grid`, claim |
 | `s03-form-read.html` | Read a form and review its flags | `GET /forms/{formId}` |
 | `s04-lease.html` | Lease lifecycle | claim, renew, release |
-| `s05-evidence.html` | Capture to stored evidence | `POST /evidence`, `HEAD /evidence/{sha}` |
+| `s05-evidence.html` | Capture to stored evidence | `POST /evidence`, `HEAD /evidence/{sha}`, `GET /evidence/{sha}` |
 | `s06-step-write.html` | Write a step and survive the refusals | `PUT /steps/{stepId}` |
 | `s07-submit.html` | Submit, flags, form-level ready | `POST /steps/{stepId}/submit` |
 | `s08-seal.html` | Seal one form | `POST /forms/{formId}/seal` |
