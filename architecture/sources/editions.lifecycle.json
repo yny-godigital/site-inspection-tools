@@ -1,0 +1,122 @@
+{
+  "schema_version": 3,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "SAT PoC v1: sealing and editions",
+    "subtitle": "A person seals one form. A compile never changes state",
+    "output": "architecture/editions.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "mainPath": [
+    "draft",
+    "sealed",
+    "amended",
+    "resealed"
+  ],
+  "states": [
+    {
+      "id": "draft",
+      "type": "start",
+      "label": "Draft",
+      "sublabel": "form editable",
+      "tag": "audited",
+      "step": "01"
+    },
+    {
+      "id": "sealed",
+      "type": "success",
+      "label": "Sealed",
+      "sublabel": "edition 1 frozen",
+      "tag": "content_sha",
+      "step": "02"
+    },
+    {
+      "id": "amended",
+      "type": "active",
+      "label": "Amendment open",
+      "sublabel": "named steps only",
+      "tag": "blocks compile",
+      "step": "03"
+    },
+    {
+      "id": "resealed",
+      "type": "success",
+      "label": "Re-sealed",
+      "sublabel": "edition 2 issued",
+      "tag": "content_sha",
+      "step": "04"
+    },
+    {
+      "id": "superseded",
+      "type": "neutral",
+      "label": "Superseded",
+      "sublabel": "older edition, kept",
+      "tag": "never deleted"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "seal",
+      "from": "draft",
+      "to": "sealed",
+      "label": "sealed",
+      "variant": "emphasis"
+    },
+    {
+      "id": "amend",
+      "from": "sealed",
+      "to": "amended",
+      "label": "amendment",
+      "variant": "security"
+    },
+    {
+      "id": "reseal",
+      "from": "amended",
+      "to": "resealed",
+      "label": "re-sealed",
+      "variant": "emphasis"
+    },
+    {
+      "id": "replace",
+      "from": "sealed",
+      "to": "superseded",
+      "label": "replaced"
+    },
+    {
+      "id": "replace2",
+      "from": "resealed",
+      "to": "superseded",
+      "label": "replaced"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Sealing is a person's act",
+      "items": [
+        "POST /forms/{formId}/seal, not a compile side effect",
+        "A compile refuses with 409 form_unsealed or 409 form_amended",
+        "So a rehearsal compile to check row anchors or image size is free"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Per form, not per SAT",
+      "items": [
+        "Each form carries its own edition number and content_sha",
+        "A typo in Cx2 does not re-version Cx3",
+        "The bundle carries bundle_sha, so both levels are provable"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "What immutable means",
+      "items": [
+        "No step value is overwritten; every accepted write is an audit row",
+        "Evidence is append-only, never deleted, never superseded",
+        "A sealed edition never changes, so the record cannot drift from what was signed"
+      ]
+    }
+  ]
+}

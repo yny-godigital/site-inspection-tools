@@ -1,0 +1,241 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "SAT PoC v1: who touches it",
+    "subtitle": "Standalone product, unnamed client, one site, no internet",
+    "output": "architecture/context.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "engineer",
+      "type": "external",
+      "label": "Engineer",
+      "sublabel": "2 or 3 on site",
+      "icon": "person",
+      "pos": [
+        40,
+        180
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "tablet",
+      "type": "frontend",
+      "label": "Browser client",
+      "sublabel": "served by the Hub",
+      "pos": [
+        230,
+        180
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "hub",
+      "type": "backend",
+      "label": "Hub",
+      "sublabel": "consolidate, compile",
+      "pos": [
+        440,
+        180
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "bundle",
+      "type": "database",
+      "label": "SAT bundle",
+      "sublabel": "xlsx + evidence",
+      "pos": [
+        640,
+        180
+      ],
+      "size": [
+        150,
+        64
+      ]
+    },
+    {
+      "id": "acc",
+      "type": "external",
+      "label": "ACC",
+      "sublabel": "acceptance portal",
+      "pos": [
+        840,
+        180
+      ],
+      "size": [
+        130,
+        64
+      ]
+    },
+    {
+      "id": "signer",
+      "type": "external",
+      "label": "Signer",
+      "sublabel": "accepts the SAT",
+      "icon": "person",
+      "pos": [
+        1020,
+        180
+      ],
+      "size": [
+        120,
+        60
+      ]
+    },
+    {
+      "id": "captool",
+      "type": "external",
+      "label": "SCADA capture tool",
+      "sublabel": "Jien Ming's app",
+      "pos": [
+        440,
+        60
+      ],
+      "size": [
+        150,
+        60
+      ]
+    },
+    {
+      "id": "whatsapp",
+      "type": "external",
+      "label": "WhatsApp",
+      "sublabel": "share action",
+      "pos": [
+        440,
+        300
+      ],
+      "size": [
+        150,
+        56
+      ]
+    },
+    {
+      "id": "customer",
+      "type": "external",
+      "label": "Customer",
+      "sublabel": "daily summary",
+      "icon": "person",
+      "pos": [
+        640,
+        300
+      ],
+      "size": [
+        140,
+        60
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "SAT PoC v1",
+      "wraps": [
+        "tablet",
+        "hub",
+        "bundle"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "operates",
+      "from": "engineer",
+      "to": "tablet",
+      "label": "operates",
+      "variant": "emphasis"
+    },
+    {
+      "id": "sync",
+      "from": "tablet",
+      "to": "hub",
+      "label": "sync"
+    },
+    {
+      "id": "compile",
+      "from": "hub",
+      "to": "bundle",
+      "label": "compile"
+    },
+    {
+      "id": "upload",
+      "from": "bundle",
+      "to": "acc",
+      "label": "upload",
+      "variant": "emphasis"
+    },
+    {
+      "id": "accepts",
+      "from": "acc",
+      "to": "signer",
+      "label": "signs"
+    },
+    {
+      "id": "trigger",
+      "from": "hub",
+      "to": "captool",
+      "label": "trigger",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "variant": "dashed"
+    },
+    {
+      "id": "summary",
+      "from": "hub",
+      "to": "whatsapp",
+      "label": "summary",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "variant": "dashed"
+    },
+    {
+      "id": "shared",
+      "from": "whatsapp",
+      "to": "customer",
+      "label": "shared",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "What the PoC proves",
+      "items": [
+        "One real SAT captured offline on a real site",
+        "Consolidated across two or three engineers",
+        "Compiled into an upload-ready bundle, put into ACC by a person, accepted by the signer"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "What it deliberately is not",
+      "items": [
+        "Not an AI application: no model, no vision, no inference cost",
+        "Not connected to SCALE: the platform does not exist yet",
+        "Not offline: site Wi-Fi is assumed for December; no Wi-Fi is v2"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Where the date comes from",
+      "items": [
+        "Site access and the signer's availability are outside CTI's control",
+        "The sample SAT form gates the template engine",
+        "Platform capacity, not developer capacity, is the binding constraint today"
+      ]
+    }
+  ]
+}

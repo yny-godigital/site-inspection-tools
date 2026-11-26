@@ -147,12 +147,11 @@ Automated gates passed on all six diagrams: schema validation, delivery, strict 
 
 ## Working files
 
-`.working/` holds the six diagram sources and their gate receipts. Nothing there is a deliverable. Regenerate a diagram from the pack folder:
+`sources/` holds the six diagram sources, committed like `../presentation/sources/`. Gate receipts stay ignored: `.working/` plus `*.finalize.json`, `*.browser-check.json` and `*.delivery.json` regenerate with one run. Nothing there is a deliverable. Regenerate a diagram from the pack folder:
 
 ```bash
 node /home/ccw/.agents/skills/archify/bin/archify.mjs finalize architecture \
-  architecture/.working/components.architecture.json architecture/components.html --quality showcase
-mv architecture/*.json architecture/.working/
+  architecture/sources/components.architecture.json architecture/components.html --quality showcase
 ```
 
-The type differs by diagram: `architecture` for context, deployment, components and logical; `lifecycle` for step states and editions. Sequences now live in `../presentation/` and regenerate from `../presentation/.working/gen_sequences.py`. The `mv` line matters, because a run always writes its receipts next to the HTML.
+No `mv` step. Receipts land ignored next to the HTML or under `.working/review-N/` for a repair run.

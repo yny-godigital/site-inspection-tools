@@ -1,0 +1,135 @@
+{
+  "schema_version": 3,
+  "diagram_type": "lifecycle",
+  "meta": {
+    "title": "SAT PoC v1: step states, web-first",
+    "subtitle": "One step, one holder at a time, decided by the Hub",
+    "output": "architecture/step-states.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "mainPath": [
+    "open",
+    "claimed",
+    "inprogress",
+    "submitted"
+  ],
+  "states": [
+    {
+      "id": "open",
+      "type": "start",
+      "label": "Open",
+      "sublabel": "nobody owns it",
+      "tag": "available",
+      "step": "01"
+    },
+    {
+      "id": "claimed",
+      "type": "active",
+      "label": "Claimed",
+      "sublabel": "one browser holds it",
+      "tag": "12h lease",
+      "step": "02"
+    },
+    {
+      "id": "inprogress",
+      "type": "active",
+      "label": "In progress",
+      "sublabel": "photo, screenshot, reading",
+      "tag": "spooled",
+      "step": "03"
+    },
+    {
+      "id": "submitted",
+      "type": "active",
+      "label": "Submitted",
+      "sublabel": "on the Hub",
+      "tag": "stored",
+      "step": "04"
+    },
+    {
+      "id": "expired",
+      "type": "waiting",
+      "label": "Lease expired",
+      "sublabel": "no activity in 12h",
+      "tag": "freed"
+    }
+  ],
+  "transitions": [
+    {
+      "id": "claim",
+      "from": "open",
+      "to": "claimed",
+      "label": "claimed"
+    },
+    {
+      "id": "start",
+      "from": "claimed",
+      "to": "inprogress",
+      "label": "started"
+    },
+    {
+      "id": "submit",
+      "from": "inprogress",
+      "to": "submitted",
+      "label": "submitted",
+      "variant": "emphasis"
+    },
+    {
+      "id": "release",
+      "from": "claimed",
+      "to": "open",
+      "label": "released",
+      "variant": "security"
+    },
+    {
+      "id": "timeout",
+      "from": "claimed",
+      "to": "expired",
+      "label": "12h idle",
+      "variant": "security"
+    },
+    {
+      "id": "recycle",
+      "from": "expired",
+      "to": "open",
+      "label": "freed"
+    },
+    {
+      "id": "correct",
+      "from": "submitted",
+      "to": "inprogress",
+      "label": "amendment",
+      "variant": "security"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Four states, not five",
+      "items": [
+        "No conflict state: there is one copy of the step, on the Hub",
+        "No offline state: the browser cannot write without the Hub",
+        "\"Complete\" is not a step state: ready to seal is decided at form level, when every step is submitted"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Why the lease still matters",
+      "items": [
+        "Two engineers opening the same step is the only remaining race",
+        "Expiry exists because an engineer will claim a step and go home",
+        "Every claim, release and expiry is audited with person, device and time"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "What v2 adds",
+      "items": [
+        "An amendment reopens named steps by name and reason, and a re-seal issues the next edition of that form",
+        "A sealed form never changes; a correction produces the next edition of that form",
+        "The conflict and offline states belong to v2, not here"
+      ]
+    }
+  ]
+}

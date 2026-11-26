@@ -1,0 +1,233 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "SAT PoC v1: deployment on site",
+    "subtitle": "One site, no internet, three browser clients and a hub laptop",
+    "output": "architecture/deployment.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "engineer",
+      "type": "external",
+      "label": "Engineer",
+      "sublabel": "2 or 3 on site",
+      "icon": "person",
+      "pos": [
+        40,
+        210
+      ],
+      "size": [
+        120,
+        64
+      ]
+    },
+    {
+      "id": "tablet",
+      "type": "frontend",
+      "label": "Tablet browser",
+      "sublabel": "Edge, no install",
+      "tag": "thin client",
+      "pos": [
+        240,
+        210
+      ],
+      "size": [
+        160,
+        68
+      ]
+    },
+    {
+      "id": "hub",
+      "type": "backend",
+      "label": "Hub laptop",
+      "sublabel": "serves the app, holds the data",
+      "tag": "stays on site",
+      "pos": [
+        500,
+        210
+      ],
+      "size": [
+        160,
+        68
+      ]
+    },
+    {
+      "id": "captool",
+      "type": "external",
+      "label": "SCADA capture tool",
+      "sublabel": "WinCC, HTTP",
+      "pos": [
+        720,
+        210
+      ],
+      "size": [
+        160,
+        64
+      ]
+    },
+    {
+      "id": "hubdb",
+      "type": "database",
+      "label": "Record store",
+      "sublabel": "records, audit",
+      "pos": [
+        412,
+        340
+      ],
+      "size": [
+        140,
+        56
+      ]
+    },
+    {
+      "id": "hubfiles",
+      "type": "database",
+      "label": "Evidence store",
+      "sublabel": "photos, screenshots",
+      "pos": [
+        620,
+        340
+      ],
+      "size": [
+        140,
+        56
+      ]
+    },
+    {
+      "id": "bundle",
+      "type": "database",
+      "label": "SAT bundle",
+      "sublabel": "xlsx + images + manifest",
+      "pos": [
+        500,
+        450
+      ],
+      "size": [
+        140,
+        56
+      ]
+    },
+    {
+      "id": "acc",
+      "type": "external",
+      "label": "ACC",
+      "sublabel": "acceptance portal",
+      "pos": [
+        500,
+        570
+      ],
+      "size": [
+        130,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Site, no internet",
+      "wraps": [
+        "tablet",
+        "hub",
+        "hubdb",
+        "hubfiles",
+        "captool",
+        "bundle"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "operates",
+      "from": "engineer",
+      "to": "tablet",
+      "label": "operates",
+      "variant": "emphasis"
+    },
+    {
+      "id": "sync-lease",
+      "from": "tablet",
+      "to": "hub",
+      "label": "app, API"
+    },
+    {
+      "id": "trigger",
+      "from": "hub",
+      "to": "captool",
+      "label": "POST /capture"
+    },
+    {
+      "id": "records",
+      "from": "hub",
+      "to": "hubdb",
+      "label": "records",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "evidence",
+      "from": "hub",
+      "to": "hubfiles",
+      "label": "evidence",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "compile",
+      "from": "hub",
+      "to": "bundle",
+      "label": "compile",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "upload",
+      "from": "bundle",
+      "to": "acc",
+      "label": "manual upload",
+      "variant": "emphasis",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "push-back",
+      "from": "captool",
+      "to": "hub",
+      "label": "POST PNG",
+      "fromSide": "left",
+      "toSide": "top",
+      "variant": "emphasis"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "What runs where",
+      "items": [
+        "Tablet: a browser and nothing else, no install, no local database",
+        "Hub: web server, API, SQLite records, evidence files, the approved xlsx template",
+        "The only thing on the tablet is a spool for an in-flight form"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Site constraints",
+      "items": [
+        "No internet. Wi-Fi is now load bearing, because capture writes straight to the Hub",
+        "Camera access needs HTTPS, so the Hub serves TLS with a certificate the tablets trust",
+        "Wi-Fi client isolation is unconfirmed with the network owner"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Still open",
+      "items": [
+        "The tool exposes POST /capture and pushes the PNG back; if it cannot, a person attaches the file by hand",
+        "Route from hub to the control network segment, fixed address and port in config"
+      ]
+    }
+  ]
+}

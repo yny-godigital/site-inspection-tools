@@ -1,0 +1,327 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "SAT PoC v1: components, one ingest path",
+    "subtitle": "Browser client, Hub API, and the screenshot adapter that reuses the same evidence path",
+    "output": "architecture/components.html",
+    "locale": "en",
+    "quality_profile": "showcase"
+  },
+  "components": [
+    {
+      "id": "ui",
+      "type": "frontend",
+      "label": "Step grid",
+      "sublabel": "status, not a wizard",
+      "pos": [
+        40,
+        190
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "capture",
+      "type": "backend",
+      "label": "Capture",
+      "sublabel": "photo, screenshot, reading",
+      "pos": [
+        300,
+        190
+      ],
+      "size": [
+        135,
+        56
+      ]
+    },
+    {
+      "id": "spool",
+      "type": "database",
+      "label": "Spool",
+      "sublabel": "IndexedDB, in-flight only",
+      "pos": [
+        300,
+        300
+      ],
+      "size": [
+        135,
+        56
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Hub API",
+      "sublabel": "the one write path",
+      "tag": "documented",
+      "pos": [
+        560,
+        190
+      ],
+      "size": [
+        140,
+        64
+      ]
+    },
+    {
+      "id": "control",
+      "type": "backend",
+      "label": "Claim and submit",
+      "sublabel": "lease, idempotent upsert, audit",
+      "pos": [
+        760,
+        110
+      ],
+      "size": [
+        240,
+        64
+      ]
+    },
+    {
+      "id": "recordstore",
+      "type": "database",
+      "label": "Record store",
+      "sublabel": "steps, readings, claims",
+      "pos": [
+        760,
+        240
+      ],
+      "size": [
+        140,
+        56
+      ]
+    },
+    {
+      "id": "evidencestore",
+      "type": "database",
+      "label": "Evidence store",
+      "sublabel": "images by hash",
+      "pos": [
+        920,
+        240
+      ],
+      "size": [
+        140,
+        56
+      ]
+    },
+    {
+      "id": "compile",
+      "type": "backend",
+      "label": "Configuration and template engine",
+      "sublabel": "form, steps, slots, exceljs row anchors",
+      "pos": [
+        760,
+        360
+      ],
+      "size": [
+        230,
+        64
+      ]
+    },
+    {
+      "id": "shotadapter",
+      "type": "backend",
+      "label": "Screenshot adapter",
+      "sublabel": "queue, call, receive, hash",
+      "pos": [
+        1000,
+        360
+      ],
+      "size": [
+        180,
+        64
+      ]
+    },
+    {
+      "id": "bundle",
+      "type": "database",
+      "label": "SAT bundle",
+      "sublabel": "xlsx, images, manifest",
+      "pos": [
+        760,
+        490
+      ],
+      "size": [
+        150,
+        56
+      ]
+    },
+    {
+      "id": "captool",
+      "type": "external",
+      "label": "SCADA capture tool",
+      "sublabel": "WinCC, HTTP listener",
+      "pos": [
+        1000,
+        600
+      ],
+      "size": [
+        180,
+        64
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Browser client",
+      "wraps": [
+        "ui",
+        "capture",
+        "spool"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "Hub",
+      "wraps": [
+        "control",
+        "recordstore",
+        "evidencestore",
+        "compile",
+        "shotadapter",
+        "bundle"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "open-step",
+      "from": "ui",
+      "to": "capture",
+      "label": "open step",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "spooled",
+      "from": "capture",
+      "to": "spool",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "client-calls",
+      "from": "capture",
+      "to": "api",
+      "label": "claim, submit",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "to-control",
+      "from": "api",
+      "to": "control",
+      "fromSide": "right",
+      "toSide": "left",
+      "variant": "emphasis"
+    },
+    {
+      "id": "rows",
+      "from": "control",
+      "to": "recordstore",
+      "label": "rows",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "images",
+      "from": "control",
+      "to": "evidencestore",
+      "label": "images",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "read-records",
+      "from": "recordstore",
+      "to": "compile",
+      "label": "records",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "read-images",
+      "from": "evidencestore",
+      "to": "compile",
+      "label": "images",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "shot-bytes",
+      "from": "shotadapter",
+      "to": "evidencestore",
+      "label": "bytes",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "trigger",
+      "from": "shotadapter",
+      "to": "captool",
+      "label": "trigger",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        955,
+        505
+      ]
+    },
+    {
+      "id": "push-back",
+      "from": "captool",
+      "to": "shotadapter",
+      "label": "POST PNG",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "variant": "emphasis",
+      "labelAt": [
+        1125,
+        560
+      ]
+    },
+    {
+      "id": "write-bundle",
+      "from": "compile",
+      "to": "bundle",
+      "label": "writes",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "One ingest path",
+      "items": [
+        "A site photo and a screenshot arrive the same way: bytes plus a client hash, hashed and stored by the Hub",
+        "The adapter is not a second store, it calls the same evidence writer",
+        "Two paths would mean two naming rules, two failure modes and a week of debugging"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "What the adapter owns",
+      "items": [
+        "Holds a FIFO queue and calls POST /capture one at a time",
+        "Receives the POST, rejects an unknown or duplicate request id, hashes the bytes",
+        "Times out, so a screenshot that never comes back becomes expired, not a wait"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "What keeps v2 cheap",
+      "items": [
+        "Client-generated ids and idempotent upserts, so a queued write can replay",
+        "Images addressed by hash, so a resent photo is deduplicated",
+        "Device id and per-device sequence on every write"
+      ]
+    }
+  ]
+}
