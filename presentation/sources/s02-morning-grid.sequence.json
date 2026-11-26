@@ -1,0 +1,222 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "S2: open the app the next morning",
+    "subtitle": "Session, grid, and what happened to yesterday's claim",
+    "locale": "en",
+    "output": "plan-2026-11-25-sat-poc-v1/presentation/s02-morning-grid.html",
+    "parentHref": "index.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "engineer",
+      "type": "external",
+      "label": "Engineer",
+      "sublabel": "on site",
+      "icon": "person"
+    },
+    {
+      "id": "client",
+      "type": "frontend",
+      "label": "Browser client",
+      "sublabel": "served by the Hub"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Hub API",
+      "sublabel": "Fastify"
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "Record store",
+      "sublabel": "SQLite, WAL",
+      "explanation": "Steps, leases, evidence metadata, editions, amendments, audit and jobs. All SQL sits behind one repository module, so the v2 move to Postgres is a driver swap and one migration."
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 319,
+      "label": "Session"
+    },
+    {
+      "from": 327,
+      "to": 431,
+      "label": "Resume the grid"
+    },
+    {
+      "from": 466,
+      "to": 598,
+      "label": "Claim again"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "engineer",
+      "to": "client",
+      "y": 170,
+      "label": "open the app",
+      "variant": "default"
+    },
+    {
+      "id": "m2",
+      "from": "client",
+      "to": "api",
+      "y": 198,
+      "label": "GET /me",
+      "variant": "default"
+    },
+    {
+      "id": "m3",
+      "from": "api",
+      "to": "client",
+      "y": 226,
+      "label": "401, session gone",
+      "variant": "return",
+      "note": "A restart ends every session"
+    },
+    {
+      "id": "m4",
+      "from": "client",
+      "to": "api",
+      "y": 281,
+      "label": "POST /auth/login",
+      "variant": "default"
+    },
+    {
+      "id": "m5",
+      "from": "api",
+      "to": "client",
+      "y": 309,
+      "label": "session cookie",
+      "variant": "return"
+    },
+    {
+      "id": "m6",
+      "from": "client",
+      "to": "api",
+      "y": 337,
+      "label": "GET /sat/{satId}/grid",
+      "variant": "emphasis",
+      "payload": {
+        "contentType": "application/json",
+        "summary": "every step, its state, holder, expiry, revision and per-slot presence"
+      }
+    },
+    {
+      "id": "m7",
+      "from": "api",
+      "to": "store",
+      "y": 365,
+      "label": "steps, leases, slot presence",
+      "variant": "default"
+    },
+    {
+      "id": "m8",
+      "from": "store",
+      "to": "api",
+      "y": 393,
+      "label": "rows and expiry",
+      "variant": "return"
+    },
+    {
+      "id": "m9",
+      "from": "api",
+      "to": "client",
+      "y": 421,
+      "label": "200 grid, state derived",
+      "variant": "return",
+      "note": "An expired lease reads open on read"
+    },
+    {
+      "id": "m10",
+      "from": "engineer",
+      "to": "client",
+      "y": 476,
+      "label": "claim yesterday's step",
+      "variant": "default"
+    },
+    {
+      "id": "m11",
+      "from": "client",
+      "to": "api",
+      "y": 504,
+      "label": "POST /steps/{id}/claim",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m12",
+      "from": "api",
+      "to": "store",
+      "y": 532,
+      "label": "lease check, then grant",
+      "variant": "default"
+    },
+    {
+      "id": "m13",
+      "from": "store",
+      "to": "api",
+      "y": 560,
+      "label": "free, 12 h granted",
+      "variant": "return"
+    },
+    {
+      "id": "m14",
+      "from": "api",
+      "to": "client",
+      "y": 588,
+      "label": "200 lease, or 409 with holder",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "engineer",
+      "from": 162,
+      "to": 484,
+      "type": "external"
+    },
+    {
+      "participant": "client",
+      "from": 162,
+      "to": 596,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 190,
+      "to": 596,
+      "type": "backend"
+    },
+    {
+      "participant": "store",
+      "from": 357,
+      "to": 568,
+      "type": "database"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Derived, not stored",
+      "items": [
+        "Step state comes from the lease and the submit act",
+        "No background job expires anything",
+        "The morning after a restart is a planned interruption"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "The loser is told why",
+      "items": [
+        "409 carries the holder and the expiry",
+        "A held step renders locked, naming the holder"
+      ]
+    }
+  ]
+}

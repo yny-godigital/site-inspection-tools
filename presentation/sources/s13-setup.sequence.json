@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "S13: install, accounts and the tool token",
+    "subtitle": "An empty Hub becomes a usable one; the format and the steps arrive in S15 and S16",
+    "locale": "en",
+    "output": "plan-2026-11-25-sat-poc-v1/presentation/s13-setup.html",
+    "parentHref": "index.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "platform",
+      "type": "external",
+      "label": "Platform",
+      "sublabel": "site machine"
+    },
+    {
+      "id": "cli",
+      "type": "backend",
+      "label": "Command line",
+      "sublabel": "setup, backup"
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "Record store",
+      "sublabel": "SQLite, WAL",
+      "explanation": "Steps, leases, evidence metadata, editions, amendments, audit and jobs. All SQL sits behind one repository module, so the v2 move to Postgres is a driver swap and one migration."
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 291,
+      "label": "Schema and accounts"
+    },
+    {
+      "from": 299,
+      "to": 319,
+      "label": "Refusals"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "platform",
+      "to": "cli",
+      "y": 170,
+      "label": "run setup, empty database",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m2",
+      "from": "cli",
+      "to": "store",
+      "y": 198,
+      "label": "migrate to the full schema",
+      "variant": "default"
+    },
+    {
+      "id": "m3",
+      "from": "cli",
+      "to": "store",
+      "y": 226,
+      "label": "users, identities, service principal",
+      "variant": "default",
+      "note": "Accounts seeded, tool token generated"
+    },
+    {
+      "id": "m4",
+      "from": "cli",
+      "to": "platform",
+      "y": 281,
+      "label": "the token, once, and never again",
+      "variant": "return"
+    },
+    {
+      "id": "m5",
+      "from": "cli",
+      "to": "platform",
+      "y": 309,
+      "label": "refused: second run without force",
+      "variant": "return",
+      "note": "A first run leaves an empty Hub that serves the app"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "platform",
+      "from": 162,
+      "to": 317,
+      "type": "external"
+    },
+    {
+      "participant": "cli",
+      "from": 162,
+      "to": 317,
+      "type": "backend"
+    },
+    {
+      "participant": "store",
+      "from": 190,
+      "to": 234,
+      "type": "database"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "An empty but usable Hub",
+      "items": [
+        "Schema migrated, accounts seeded, one service token",
+        "The form and the steps are not seeded here"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "A token with one job",
+      "items": [
+        "Hashed at rest, checked on the tool route only",
+        "Disabling it stops the tool route and nothing else"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "S17: scanned list to candidate, then a person commits",
+    "subtitle": "Conditional and gated: it proposes, a person commits through the same import",
+    "locale": "en",
+    "output": "plan-2026-11-25-sat-poc-v1/presentation/s17-ingestion.html",
+    "parentHref": "index.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "engineer",
+      "type": "external",
+      "label": "Engineer",
+      "sublabel": "on site",
+      "icon": "person"
+    },
+    {
+      "id": "ingestion",
+      "type": "backend",
+      "label": "Ingestion path",
+      "sublabel": "conditional, gated"
+    },
+    {
+      "id": "reviewer",
+      "type": "external",
+      "label": "Reviewer",
+      "sublabel": "accepts or rejects",
+      "icon": "person"
+    },
+    {
+      "id": "cli",
+      "type": "backend",
+      "label": "Command line",
+      "sublabel": "setup, backup"
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "Record store",
+      "sublabel": "SQLite, WAL",
+      "explanation": "Steps, leases, evidence metadata, editions, amendments, audit and jobs. All SQL sits behind one repository module, so the v2 move to Postgres is a driver swap and one migration."
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 263,
+      "label": "Route"
+    },
+    {
+      "from": 298,
+      "to": 401,
+      "label": "Review"
+    },
+    {
+      "from": 409,
+      "to": 429,
+      "label": "Commit"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "engineer",
+      "to": "ingestion",
+      "y": 170,
+      "label": "hand over a scanned or PDF list",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m2",
+      "from": "ingestion",
+      "to": "engineer",
+      "y": 198,
+      "label": "refused: read the cells instead",
+      "variant": "return",
+      "note": "A spreadsheet never goes through OCR"
+    },
+    {
+      "id": "m3",
+      "from": "ingestion",
+      "to": "reviewer",
+      "y": 253,
+      "label": "candidate CSV and schema JSON",
+      "variant": "default",
+      "note": "Every value carries page and cell provenance"
+    },
+    {
+      "id": "m4",
+      "from": "reviewer",
+      "to": "ingestion",
+      "y": 308,
+      "label": "accept, edit or reject each row",
+      "variant": "default",
+      "note": "An unreadable region is reported, not guessed"
+    },
+    {
+      "id": "m5",
+      "from": "ingestion",
+      "to": "cli",
+      "y": 363,
+      "label": "the accepted candidate",
+      "variant": "default"
+    },
+    {
+      "id": "m6",
+      "from": "cli",
+      "to": "store",
+      "y": 391,
+      "label": "import, the same path as S16",
+      "variant": "default"
+    },
+    {
+      "id": "m7",
+      "from": "store",
+      "to": "cli",
+      "y": 419,
+      "label": "steps and schema rows",
+      "variant": "return",
+      "note": "The record is only ever written by the import"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "engineer",
+      "from": 162,
+      "to": 206,
+      "type": "external"
+    },
+    {
+      "participant": "ingestion",
+      "from": 162,
+      "to": 371,
+      "type": "backend"
+    },
+    {
+      "participant": "reviewer",
+      "from": 245,
+      "to": 316,
+      "type": "external"
+    },
+    {
+      "participant": "cli",
+      "from": 355,
+      "to": 427,
+      "type": "backend"
+    },
+    {
+      "participant": "store",
+      "from": 383,
+      "to": 427,
+      "type": "database"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Propose, never write",
+      "items": [
+        "No database handle and no API client in the ingestion path",
+        "R64: a candidate reaches the record only through the import"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Gated, not scheduled",
+      "items": [
+        "Built only if a scanned list actually arrives (A12)",
+        "Trusted only after a labelled score and an agreed threshold (R66)"
+      ]
+    }
+  ]
+}

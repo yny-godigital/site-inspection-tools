@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "c11d1bf3-74c2-49ed-9350-728a66d1fbd3",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "/home/ccw/.hermes/home-project-scale/workspace/project-scale/cost-estimation/v0_2/Pilot/plan-2026-11-25-sat-poc-v1/presentation/sources/s08-seal.sequence.json",
+  "output": "/home/ccw/.hermes/home-project-scale/workspace/project-scale/cost-estimation/v0_2/Pilot/plan-2026-11-25-sat-poc-v1/presentation/s08-seal.html",
+  "specification": {
+    "sha256": "7eb77831783712bb27e6b644bcc363033e68fb3a221f4946f3d27e180724ca6a",
+    "bytes": 4192
+  },
+  "artifact": {
+    "sha256": "81c233656f0d805ea1d8d2b784d5013c94f9591cdb2d15a92efc9058aff22a40",
+    "bytes": 928971
+  }
+}

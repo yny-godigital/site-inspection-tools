@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "S7: submit, flags, and form-level ready",
+    "subtitle": "Saved is not finished; a person says when a step is done",
+    "locale": "en",
+    "output": "plan-2026-11-25-sat-poc-v1/presentation/s07-submit.html",
+    "parentHref": "index.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "engineer",
+      "type": "external",
+      "label": "Engineer",
+      "sublabel": "on site",
+      "icon": "person"
+    },
+    {
+      "id": "client",
+      "type": "frontend",
+      "label": "Browser client",
+      "sublabel": "served by the Hub"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Hub API",
+      "sublabel": "Fastify"
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "Record store",
+      "sublabel": "SQLite, WAL",
+      "explanation": "Steps, leases, evidence metadata, editions, amendments, audit and jobs. All SQL sits behind one repository module, so the v2 move to Postgres is a driver swap and one migration."
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 320,
+      "label": "Submit"
+    },
+    {
+      "from": 328,
+      "to": 431,
+      "label": "Form state"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "engineer",
+      "to": "client",
+      "y": 170,
+      "label": "submit the step",
+      "variant": "default"
+    },
+    {
+      "id": "m2",
+      "from": "client",
+      "to": "api",
+      "y": 198,
+      "label": "POST /steps/{id}/submit",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m3",
+      "from": "api",
+      "to": "store",
+      "y": 226,
+      "label": "check the lease",
+      "variant": "default"
+    },
+    {
+      "id": "m4",
+      "from": "api",
+      "to": "client",
+      "y": 254,
+      "label": "409 not_claimed",
+      "variant": "return"
+    },
+    {
+      "id": "m5",
+      "from": "api",
+      "to": "client",
+      "y": 282,
+      "label": "409 stale_revision",
+      "variant": "return"
+    },
+    {
+      "id": "m6",
+      "from": "api",
+      "to": "store",
+      "y": 310,
+      "label": "status submitted, audit",
+      "variant": "default"
+    },
+    {
+      "id": "m7",
+      "from": "api",
+      "to": "client",
+      "y": 338,
+      "label": "200 status, revision, flags",
+      "variant": "return",
+      "note": "Empty columns and empty slots"
+    },
+    {
+      "id": "m8",
+      "from": "api",
+      "to": "store",
+      "y": 393,
+      "label": "recompute form state",
+      "variant": "default"
+    },
+    {
+      "id": "m9",
+      "from": "store",
+      "to": "api",
+      "y": 421,
+      "label": "ready or still draft",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "client",
+      "from": 162,
+      "to": 346,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 190,
+      "to": 429,
+      "type": "backend"
+    },
+    {
+      "participant": "store",
+      "from": 218,
+      "to": 429,
+      "type": "database"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "An explicit act",
+      "items": [
+        "A write means saved, not finished",
+        "Submitting twice returns the same body",
+        "A missing slot becomes a flag, not a refusal"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Ready is a form statement",
+      "items": [
+        "There is no step-level complete",
+        "Two answers to one question is how records drift"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "5295b12e-ee08-4ddd-92da-114b0d012a88",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "/home/ccw/.hermes/home-project-scale/workspace/project-scale/cost-estimation/v0_2/Pilot/plan-2026-11-25-sat-poc-v1/presentation/sources/s04-lease.sequence.json",
+  "output": "/home/ccw/.hermes/home-project-scale/workspace/project-scale/cost-estimation/v0_2/Pilot/plan-2026-11-25-sat-poc-v1/presentation/s04-lease.html",
+  "specification": {
+    "sha256": "40742456e8dbfc9a56e43f3eb87f08d93a0d329ce30896c0a781ebbe0c61f23a",
+    "bytes": 4723
+  },
+  "artifact": {
+    "sha256": "29e0e770205e95797f3f20a10d4d5756d0bca08d2e743cc848e9bdff7bb5c3eb",
+    "bytes": 933331
+  }
+}

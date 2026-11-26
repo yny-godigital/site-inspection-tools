@@ -1,0 +1,1541 @@
+{
+  "pack": "sat-poc-v1",
+  "title": "SAT PoC v1 — site capture to uploadable bundle",
+  "version": "1.0",
+  "status": "draft",
+  "date": "2026-11-26",
+  "docs": [
+    {
+      "file": "00-index.md",
+      "sha256": "35b86b958ed14adb4029fb33532b9eacf070b923fed55d24686925371613fc90"
+    },
+    {
+      "file": "01-scope-statement.md",
+      "sha256": "5b1d696c538afb8540ade23055d78d73d389700c67194c4b2dc6f4050be0b9ee"
+    },
+    {
+      "file": "02-requirements.md",
+      "sha256": "f4b1e3c7aa773a8d432389ad04fe2ed96b5f213b4d6b2c1c002f4e678beda15c"
+    },
+    {
+      "file": "03-architecture.md",
+      "sha256": "503e20d7efddd01ae4f48eefb0c9675af8918d6104575e4929ba79a7a36d489e"
+    },
+    {
+      "file": "04-design.md",
+      "sha256": "1f61cac04bbc4357ab3cd8c2ff90903a71385d609dc865586aa04bf80ac85f76"
+    },
+    {
+      "file": "05-phases-wbs.md",
+      "sha256": "a65a1932b693ec82a66c3b9b64a406c73a008bb5bdee03b48c7cc700e5db36e0"
+    },
+    {
+      "file": "06-delegated-and-open.md",
+      "sha256": "8688c3167c5bbd5878b52fd97fe3acbeffc97602fa2f68bd727e3bba9679aa2a"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R1",
+      "text": "An engineer signs in with an account name and password and receives a session cookie.",
+      "priority": "M",
+      "acceptance": "A wrong password returns 401 with the one error shape; a correct one returns 200 and sets an `HttpOnly` cookie.",
+      "source": "interface spec, Auth",
+      "work_packages": [
+        "WP-1.1.5"
+      ]
+    },
+    {
+      "id": "R2",
+      "text": "Every route applies one capability check, and no handler reads a role directly.",
+      "priority": "M",
+      "acceptance": "A grep test fails on a direct role read outside the auth module; a request without the capability returns 401 or 403.",
+      "source": "interface spec, Auth; build plan A6",
+      "work_packages": [
+        "WP-1.1.5"
+      ]
+    },
+    {
+      "id": "R3",
+      "text": "Restarting the Hub invalidates every session.",
+      "priority": "M",
+      "acceptance": "Sign in, restart the service, the next request returns 401.",
+      "source": "interface spec, Auth",
+      "work_packages": [
+        "WP-1.1.5"
+      ]
+    },
+    {
+      "id": "R4",
+      "text": "The grid returns every step of the SAT with its state, holder, lease expiry, revision and per-slot evidence presence.",
+      "priority": "M",
+      "acceptance": "A step claimed by another account shows that holder and expiry; a step with no evidence shows an empty slot list.",
+      "source": "interface spec, routes and B1",
+      "work_packages": [
+        "WP-1.2.2"
+      ]
+    },
+    {
+      "id": "R5",
+      "text": "A form is served with its pinned schema version, columns, slots, sections and its steps.",
+      "priority": "M",
+      "acceptance": "The response names a schema id that exists in `form_schema` and the columns match that payload.",
+      "source": "interface spec, routes and B2",
+      "work_packages": [
+        "WP-1.2.3"
+      ]
+    },
+    {
+      "id": "R6",
+      "text": "A second form, defined by a second schema row and its own steps, is served and rendered with no code change.",
+      "priority": "M",
+      "acceptance": "With the second schema row loaded, the grid, the form read and the workbook all serve it and no source file is edited.",
+      "source": "scope interview Q19; build plan B2, D1",
+      "work_packages": [
+        "WP-1.2.3",
+        "WP-1.4.1",
+        "WP-1.5.5"
+      ]
+    },
+    {
+      "id": "R7",
+      "text": "Claim grants a 12-hour lease, and a second claimer is refused with the holder and the expiry.",
+      "priority": "M",
+      "acceptance": "Two browsers claim one step; one gets 200, the other 409 carrying holder and `claimed_until`.",
+      "source": "interface spec, Claim",
+      "work_packages": [
+        "WP-1.2.4"
+      ]
+    },
+    {
+      "id": "R8",
+      "text": "Renew extends the lease from the server clock, and release makes the step claimable at once.",
+      "priority": "M",
+      "acceptance": "Renewing twice moves `claimed_until` forward by 12 hours each time; release lets another browser claim immediately.",
+      "source": "interface spec, routes",
+      "work_packages": [
+        "WP-1.2.4"
+      ]
+    },
+    {
+      "id": "R9",
+      "text": "An expired lease reads as open with no background job running.",
+      "priority": "M",
+      "acceptance": "Move the clock past the expiry, or wait it out; the grid reports the step open and the next claim succeeds.",
+      "source": "build plan B3",
+      "work_packages": [
+        "WP-1.2.2",
+        "WP-1.2.4"
+      ]
+    },
+    {
+      "id": "R10",
+      "text": "A write carrying a stale revision is refused with the current revision.",
+      "priority": "M",
+      "acceptance": "A second write at the same `expected_revision` returns 409 `stale_revision` with `current`.",
+      "source": "interface spec, Step upsert",
+      "work_packages": [
+        "WP-1.2.5"
+      ]
+    },
+    {
+      "id": "R11",
+      "text": "A write naming an evidence hash the Hub does not hold is refused and names the missing hashes.",
+      "priority": "M",
+      "acceptance": "A write referencing a random hash returns 422 `unknown_evidence` listing that hash.",
+      "source": "interface spec, Step upsert",
+      "work_packages": [
+        "WP-1.2.5"
+      ]
+    },
+    {
+      "id": "R12",
+      "text": "Values are validated against the pinned schema version and a failure names the offending column ids.",
+      "priority": "M",
+      "acceptance": "A number column given text returns 422 `invalid_values` with that column id; an enum outside its options does the same.",
+      "source": "interface spec, Step upsert",
+      "work_packages": [
+        "WP-1.2.5"
+      ]
+    },
+    {
+      "id": "R13",
+      "text": "One accepted write increments the revision exactly once.",
+      "priority": "M",
+      "acceptance": "Three accepted writes in a row leave `revision` at 4, and a refused write leaves it unchanged.",
+      "source": "build plan B4",
+      "work_packages": [
+        "WP-1.2.5"
+      ]
+    },
+    {
+      "id": "R14",
+      "text": "Submit is idempotent, and a caller who does not hold the lease is refused.",
+      "priority": "M",
+      "acceptance": "Submitting twice returns the same body; submitting without the lease returns 409 `not_claimed`; submitting at an old revision returns 409 `stale_revision` with the current revision.",
+      "source": "interface spec, Submit",
+      "work_packages": [
+        "WP-1.2.6"
+      ]
+    },
+    {
+      "id": "R15",
+      "text": "Submit records flags for empty required columns and empty slots, and does not refuse because of them.",
+      "priority": "M",
+      "acceptance": "A step with an empty slot submits successfully and the response lists that slot in `flags`.",
+      "source": "interface spec, Submit",
+      "work_packages": [
+        "WP-1.2.6"
+      ]
+    },
+    {
+      "id": "R16",
+      "text": "A form reads ready only when every step of that form is submitted.",
+      "priority": "M",
+      "acceptance": "With one step still open, the form reports not ready; submitting the last step flips it.",
+      "source": "build plan B5",
+      "work_packages": [
+        "WP-1.2.6"
+      ]
+    },
+    {
+      "id": "R17",
+      "text": "Seal writes one edition carrying a canonical `content_sha` and the pinned schema id, and a second seal returns the same edition.",
+      "priority": "M",
+      "acceptance": "A double tap on seal returns the same `edition_id` and one edition row.",
+      "source": "interface spec, Seal",
+      "work_packages": [
+        "WP-1.2.7"
+      ]
+    },
+    {
+      "id": "R18",
+      "text": "Seal is refused while a step of that form is unfinished, and the refusal names those steps.",
+      "priority": "M",
+      "acceptance": "With one step open, seal returns 409 `steps_open` listing it.",
+      "source": "interface spec, Seal",
+      "work_packages": [
+        "WP-1.2.7"
+      ]
+    },
+    {
+      "id": "R19",
+      "text": "A write to a step in a sealed form is refused unless an open amendment names that step.",
+      "priority": "M",
+      "acceptance": "Writing a sealed step returns 423; after an amendment naming it, the same write succeeds.",
+      "source": "interface spec, Seal and amendments",
+      "work_packages": [
+        "WP-1.2.7",
+        "WP-1.2.8"
+      ]
+    },
+    {
+      "id": "R20",
+      "text": "`content_sha` is identical for two seals of identical data and different after any change.",
+      "priority": "M",
+      "acceptance": "Seal twice on unchanged data and compare; change one value and re-seal; the two hashes differ.",
+      "source": "build plan B6",
+      "work_packages": [
+        "WP-1.2.7"
+      ]
+    },
+    {
+      "id": "R21",
+      "text": "An amendment reopens only its named steps, requires a reason, and re-sealing writes exactly one new edition and marks the previous one superseded.",
+      "priority": "M",
+      "acceptance": "An amendment naming one step leaves the other steps at 423; re-seal produces one edition with the next number and sets `superseded` on the previous.",
+      "source": "interface spec, amendments",
+      "work_packages": [
+        "WP-1.2.8"
+      ]
+    },
+    {
+      "id": "R22",
+      "text": "An amendment cannot be dropped once a step was written during it.",
+      "priority": "M",
+      "acceptance": "Open an amendment, write the step, drop it; the drop is refused with a code and a reason.",
+      "source": "interface spec, seven rules",
+      "work_packages": [
+        "WP-1.2.8"
+      ]
+    },
+    {
+      "id": "R23",
+      "text": "Compile is refused while any form is unsealed or amended, and the refusal names the blocking form.",
+      "priority": "M",
+      "acceptance": "With a draft form present, compile returns 409 `form_unsealed`; with an open amendment, 409 `form_amended` naming it.",
+      "source": "interface spec, amendments",
+      "work_packages": [
+        "WP-1.4.4"
+      ]
+    },
+    {
+      "id": "R24",
+      "text": "Compile is idempotent per `Idempotency-Key` and leaves no partial bundle on failure.",
+      "priority": "M",
+      "acceptance": "The same key twice returns the same job id; a job forced to fail leaves no archive on disk.",
+      "source": "build plan D4",
+      "work_packages": [
+        "WP-1.4.4"
+      ]
+    },
+    {
+      "id": "R25",
+      "text": "Evidence upload verifies the hash the client declares, enforces the size cap before reading the body, and binds the blob to one slot.",
+      "priority": "M",
+      "acceptance": "A wrong hash returns 400 `hash_mismatch`; a declared oversize returns 413 without the body being read.",
+      "source": "interface spec, Evidence upload",
+      "work_packages": [
+        "WP-1.3.1"
+      ]
+    },
+    {
+      "id": "R26",
+      "text": "Identical bytes are stored once, under a file name equal to their hash, and reported as already present.",
+      "priority": "M",
+      "acceptance": "The same file uploaded twice returns 409 `already_exists` and one file exists under `evidence/`.",
+      "source": "interface spec, Evidence upload; decision D11",
+      "work_packages": [
+        "WP-1.3.1"
+      ]
+    },
+    {
+      "id": "R27",
+      "text": "A second image for a slot already filled at the same revision is refused.",
+      "priority": "M",
+      "acceptance": "Two uploads for one slot at one revision: the second returns 422 `slot_occupied`.",
+      "source": "interface spec, Evidence upload",
+      "work_packages": [
+        "WP-1.3.1"
+      ]
+    },
+    {
+      "id": "R28",
+      "text": "A 1000 px document copy is derived, regenerable, and EXIF-oriented; a format that cannot be converted is refused rather than stored.",
+      "priority": "M",
+      "acceptance": "A portrait phone photo lands upright in original and copy; deleting the copy and re-running regenerates it; an unconvertible file returns 415.",
+      "source": "build plan C2; decision D3",
+      "work_packages": [
+        "WP-1.3.2"
+      ]
+    },
+    {
+      "id": "R29",
+      "text": "A screenshot request writes one trigger file and returns a request id, or refuses and creates no row when the share cannot be written.",
+      "priority": "M",
+      "acceptance": "With the share read-only, the call returns 500 `trigger_unwritable` and the request table is unchanged.",
+      "source": "interface spec, Screenshot",
+      "work_packages": [
+        "WP-1.3.5"
+      ]
+    },
+    {
+      "id": "R30",
+      "text": "Request state is derived as pending, ready or expired on the server clock, and a late post from the tool is refused.",
+      "priority": "M",
+      "acceptance": "No post within the deadline and the state reads expired with no job running; a post after the deadline returns 409 `expired`.",
+      "source": "interface spec, Screenshot; decision D19",
+      "work_packages": [
+        "WP-1.3.5"
+      ]
+    },
+    {
+      "id": "R31",
+      "text": "The capture tool authenticates with a service token, and the token never appears in a log or an error body.",
+      "priority": "M",
+      "acceptance": "A wrong token returns 401; grep the log and every error response for the token and find nothing.",
+      "source": "interface spec, Screenshot; build plan C4",
+      "work_packages": [
+        "WP-1.3.6"
+      ]
+    },
+    {
+      "id": "R32",
+      "text": "The capture tool change accepts a request id from the share, posts the PNG to the Hub, and keeps writing its local copy as before.",
+      "priority": "M",
+      "acceptance": "On a test target, one request produces one stored screenshot and still leaves a file in the tool's own directory.",
+      "source": "interface spec, Screenshot",
+      "work_packages": [
+        "WP-1.3.8"
+      ]
+    },
+    {
+      "id": "R33",
+      "text": "In-flight captures and one in-flight form survive a page reload in the browser spool, and only chosen captures leave the device.",
+      "priority": "M",
+      "acceptance": "Five captures, two chosen, two uploads issued; a reload before save restores the spool; a discarded shot appears in no request.",
+      "source": "build plan C5; decision D10",
+      "work_packages": [
+        "WP-1.3.3"
+      ]
+    },
+    {
+      "id": "R34",
+      "text": "Capture opens the device's own camera app through a file input, and the tablet is the tested path.",
+      "priority": "M",
+      "acceptance": "On the nominated tablet, the camera opens and returns a photo with no permission prompt and no video stream in the page.",
+      "source": "decision D14",
+      "work_packages": [
+        "WP-1.3.3"
+      ]
+    },
+    {
+      "id": "R35",
+      "text": "The step screen shows holder, lease expiry and slot progress, and submit is unavailable unless this account holds the lease.",
+      "priority": "M",
+      "acceptance": "A step held by another account renders locked with that holder named, and its submit control is not offered.",
+      "source": "build plan C6",
+      "work_packages": [
+        "WP-1.3.4"
+      ]
+    },
+    {
+      "id": "R36",
+      "text": "The template engine renders a form from its pinned schema, in configured column order, one row per step, deterministically.",
+      "priority": "M",
+      "acceptance": "A golden-file test renders the fixture schema twice and gets byte-identical output.",
+      "source": "build plan D1; decision D4",
+      "work_packages": [
+        "WP-1.4.1"
+      ]
+    },
+    {
+      "id": "R37",
+      "text": "Images are placed one per slot without overlapping a cell or a neighbouring row, and an empty slot stays visibly empty.",
+      "priority": "M",
+      "acceptance": "A missing slot leaves a blank cell and no row shift; no image crosses a cell boundary in a rendered workbook.",
+      "source": "build plan D2",
+      "work_packages": [
+        "WP-1.4.2"
+      ]
+    },
+    {
+      "id": "R38",
+      "text": "The generated workbook opens in Excel and in LibreOffice without a repair prompt.",
+      "priority": "M",
+      "acceptance": "Both applications open the fixture workbook with no dialog and no recovered-content message.",
+      "source": "build plan D2",
+      "work_packages": [
+        "WP-1.4.2"
+      ]
+    },
+    {
+      "id": "R39",
+      "text": "The bundle is assembled from `bundle.layout.json` with one workbook per form, evidence filed by hash, and a manifest that validates against its schema.",
+      "priority": "M",
+      "acceptance": "Changing the layout file changes the tree with no code edit; the manifest validates.",
+      "source": "interface spec, Bundle; build plan D3",
+      "work_packages": [
+        "WP-1.4.3"
+      ]
+    },
+    {
+      "id": "R40",
+      "text": "Every evidence hash named in the manifest exists in the archive, and manual files are shipped but never embedded in a workbook.",
+      "priority": "M",
+      "acceptance": "A script walks the manifest, finds every hash in the archive, and finds no manual file inside any workbook.",
+      "source": "interface spec, Bundle; build plan D3",
+      "work_packages": [
+        "WP-1.4.3"
+      ]
+    },
+    {
+      "id": "R41",
+      "text": "Every state-changing route writes one audit row with server time and actor.",
+      "priority": "M",
+      "acceptance": "One step driven end to end yields the ordered rows for claim, write, submit, seal, compile.",
+      "source": "build plan E2",
+      "work_packages": [
+        "WP-1.2.9"
+      ]
+    },
+    {
+      "id": "R42",
+      "text": "The daily summary is text, is stored, and its counts match the grid for that day.",
+      "priority": "M",
+      "acceptance": "Generate the summary twice; two rows are stored, both retrievable, and the counts match the grid.",
+      "source": "build plan D5",
+      "work_packages": [
+        "WP-1.5.1"
+      ]
+    },
+    {
+      "id": "R43",
+      "text": "Backup writes a manifest, and a restore into a scratch folder reproduces counts and hashes; a tampered evidence file is reported.",
+      "priority": "M",
+      "acceptance": "Restore into a scratch folder and compare counts and hashes; alter one evidence byte and the manifest check reports it.",
+      "source": "build plan E1",
+      "work_packages": [
+        "WP-1.1.8"
+      ]
+    },
+    {
+      "id": "R44",
+      "text": "A clean Windows machine with no internet installs from one folder and serves the app at a fixed address, and the service survives a reboot.",
+      "priority": "M",
+      "acceptance": "Copy the folder, run the install script, reach the app over HTTP, reboot, reach it again with no manual step.",
+      "source": "build plan A7",
+      "work_packages": [
+        "WP-1.1.7",
+        "WP-1.6.5"
+      ]
+    },
+    {
+      "id": "R45",
+      "text": "Every error response uses one shape and one catalogue, and an unexpected exception returns that shape with no stack trace.",
+      "priority": "M",
+      "acceptance": "A test enumerates the catalogue; a forced exception returns the error shape and no trace.",
+      "source": "interface spec, Errors; build plan B8",
+      "work_packages": [
+        "WP-1.2.1"
+      ]
+    },
+    {
+      "id": "R46",
+      "text": "No SQL sits outside the repository module, and no numeric literal above 60 sits outside the configuration module.",
+      "priority": "M",
+      "acceptance": "A grep test over route and service files finds neither.",
+      "source": "build plan A2, A4; decision D18",
+      "work_packages": [
+        "WP-1.1.2",
+        "WP-1.1.4"
+      ]
+    },
+    {
+      "id": "R47",
+      "text": "Two concurrent claims on one step produce one grant and one refusal.",
+      "priority": "M",
+      "acceptance": "A test fires both claims and asserts one 200 with the lease and one 409.",
+      "source": "build plan A4",
+      "work_packages": [
+        "WP-1.1.4"
+      ]
+    },
+    {
+      "id": "R48",
+      "text": "Every write records the device id and that device's sequence number.",
+      "priority": "M",
+      "acceptance": "Two writes from one browser carry the same `device_id` and increasing `client_seq`.",
+      "source": "interface spec, Identity; README, six rules",
+      "work_packages": [
+        "WP-1.2.5"
+      ]
+    },
+    {
+      "id": "R49",
+      "text": "Evidence bytes live as files named by hash and never in the database.",
+      "priority": "M",
+      "acceptance": "The database dump contains no blob column holding image bytes; `evidence/` holds the files.",
+      "source": "decision D12; interface spec, Schema",
+      "work_packages": [
+        "WP-1.1.3",
+        "WP-1.3.1"
+      ]
+    },
+    {
+      "id": "R50",
+      "text": "The site-day checklist can be followed by someone who did not build the system.",
+      "priority": "M",
+      "acceptance": "A second person runs the checklist on the rehearsal machine without asking a question, and every step has a visible confirmation.",
+      "source": "build plan E4",
+      "work_packages": [
+        "WP-1.5.3"
+      ]
+    },
+    {
+      "id": "R51",
+      "text": "The whole flow runs from empty to a sealed edition and a bundle in one sitting, and repeats the next day after a service restart.",
+      "priority": "M",
+      "acceptance": "The rehearsal completes in one sitting; the next morning it repeats after a restart with no manual repair.",
+      "source": "build plan E3",
+      "work_packages": [
+        "WP-1.5.2"
+      ]
+    },
+    {
+      "id": "R52",
+      "text": "Our standard SAT format is defined once as a master record and loaded through the setup import.",
+      "priority": "M",
+      "acceptance": "The format renders a workbook with the agreed columns, slots and sections, and matches the agreed specimen workbook.",
+      "source": "alignment 2026-11-26 (A11); decisions D4, D16; build plan A5",
+      "work_packages": [
+        "WP-1.1.6",
+        "WP-1.5.4"
+      ]
+    },
+    {
+      "id": "R53",
+      "text": "A second project's instrument list renders on the same format with no code change.",
+      "priority": "M",
+      "acceptance": "With a second fixture list loaded, the grid, the form read and the workbook all serve it and no source file is edited, and the acceptance is dated.",
+      "source": "scope interview Q19; alignment 2026-11-26 (A11)",
+      "work_packages": [
+        "WP-1.5.5"
+      ]
+    },
+    {
+      "id": "R54",
+      "text": "Site Wi-Fi client isolation is confirmed in writing before any tablet test on site.",
+      "priority": "M",
+      "acceptance": "The confirmation exists as a message or document from the site network owner, quoted in `06`.",
+      "source": "build plan, Preconditions",
+      "work_packages": [
+        "WP-1.6.2"
+      ]
+    },
+    {
+      "id": "R55",
+      "text": "The Hub runs on a named machine at a fixed LAN address the tablets use.",
+      "priority": "M",
+      "acceptance": "The checklist names the machine and the address, and a tablet reaches the app at that address.",
+      "source": "build plan, Preconditions",
+      "work_packages": [
+        "WP-1.6.1"
+      ]
+    },
+    {
+      "id": "R56",
+      "text": "The capture tool is tested against a target that is not the live control room PC, and the outcome is written down as one of three outcomes.",
+      "priority": "M",
+      "acceptance": "A dated record names the outcome, and the demo script matches it.",
+      "source": "build plan E3a",
+      "work_packages": [
+        "WP-1.3.8",
+        "WP-1.6.6"
+      ]
+    },
+    {
+      "id": "R57",
+      "text": "Someone who did not build the system can run the site day from the checklist and hand the signer a bundle.",
+      "priority": "M",
+      "acceptance": "The checklist run on site produces a sealed bundle that a person uploads, with no builder present.",
+      "source": "build plan E4; scope interview Q8",
+      "work_packages": [
+        "WP-1.5.7",
+        "WP-1.6.5"
+      ]
+    },
+    {
+      "id": "R58",
+      "text": "A grid of 100 steps responds in under 200 ms on the site laptop.",
+      "priority": "M",
+      "acceptance": "A timing test on the site machine reports the 95th percentile under 200 ms.",
+      "source": "build plan B1",
+      "work_packages": [
+        "WP-1.2.2"
+      ]
+    },
+    {
+      "id": "R59",
+      "text": "Three devices and up to three engineers share one SAT, with one lease holder per step.",
+      "priority": "M",
+      "acceptance": "Three browsers work the same form at once and no step is ever claimed twice.",
+      "source": "scope interview Q9; decision D8",
+      "work_packages": [
+        "WP-1.2.4"
+      ]
+    },
+    {
+      "id": "R60",
+      "text": "Image caps are enforced: 3000 px long edge, 8 MB after client encode, reject above 20 MB before decode, tool PNG up to 10 MB.",
+      "priority": "M",
+      "acceptance": "8 MB passes, 8 MB plus one byte returns 413, a 20 MB declared body is refused before decode, a 10 MB PNG is accepted.",
+      "source": "interface spec, Caps",
+      "work_packages": [
+        "WP-1.3.1"
+      ]
+    },
+    {
+      "id": "R61",
+      "text": "v1 keeps every blob, edition and superseded copy; nothing is deleted automatically.",
+      "priority": "M",
+      "acceptance": "After an amendment and re-seal, both editions and every evidence file are still present.",
+      "source": "deferred register item 11",
+      "work_packages": [
+        "WP-1.5.6"
+      ]
+    },
+    {
+      "id": "R62",
+      "text": "The Hub runs on Node 22 LTS on Windows, serves HTTP on the site LAN, and needs no internet at run time.",
+      "priority": "M",
+      "acceptance": "The install runs with the network cable out and the LAN up, and the app serves the grid.",
+      "source": "build plan A1, A7; decision D5",
+      "work_packages": [
+        "WP-1.1.1",
+        "WP-1.1.7"
+      ]
+    },
+    {
+      "id": "R63",
+      "text": "The setup import accepts an instrument-list spreadsheet with fixed columns, creates one step per row, and refuses a malformed row without loading anything.",
+      "priority": "M",
+      "acceptance": "A 30-row list imports as 30 steps; a row with a duplicate tag or a missing level is refused by name and the table is unchanged.",
+      "source": "alignment 2026-11-26 (A12)",
+      "work_packages": [
+        "WP-1.5.8"
+      ]
+    },
+    {
+      "id": "R64",
+      "text": "A spreadsheet list is read as cells and never OCR'd, and a scanned or PDF list may be converted to a candidate CSV and candidate schema JSON. No candidate reaches the record except through the same import a person commits.",
+      "priority": "S",
+      "acceptance": "The ingestion path has no database handle and no API client; every candidate is reviewed before the import sees it; an XLSX goes to the importer and is never OCR'd.",
+      "source": "build plan F0, F3, F4; deferred register",
+      "work_packages": [
+        "WP-1.7.1",
+        "WP-1.7.4",
+        "WP-1.7.5",
+        "WP-1.7.6"
+      ]
+    },
+    {
+      "id": "R65",
+      "text": "Every value the ingestion path proposes carries its provenance and a confidence, and an unreadable region is reported rather than guessed.",
+      "priority": "S",
+      "acceptance": "A proposed field cites its page and cell; an unrecognised region appears as a report line, not as an empty value.",
+      "source": "build plan F1, F2, F5",
+      "work_packages": [
+        "WP-1.7.2",
+        "WP-1.7.3"
+      ]
+    },
+    {
+      "id": "R66",
+      "text": "The ingestion path is gated: built only if a scanned list arrives, and trusted only after a labelled-sample score exists that someone else agreed to.",
+      "priority": "S",
+      "acceptance": "A written threshold and a per-field score exist before any candidate is accepted as correct, and P6 does not start otherwise.",
+      "source": "build plan F6; Q12 answer 2026-11-26",
+      "work_packages": [
+        "WP-1.7.7",
+        "WP-1.7.8"
+      ]
+    }
+  ],
+  "non_functional": [
+    {
+      "id": "R58",
+      "kind": "latency",
+      "target": "100-step grid under 200 ms p95 on the site laptop",
+      "source": "build plan B1"
+    },
+    {
+      "id": "R59",
+      "kind": "concurrency",
+      "target": "3 devices, 2-3 engineers, one lease holder per step",
+      "source": "scope interview Q9"
+    },
+    {
+      "id": "R60",
+      "kind": "limits",
+      "target": "3000 px, 8 MB, 20 MB pre-decode reject, 10 MB tool PNG",
+      "source": "interface spec, Caps"
+    },
+    {
+      "id": "R61",
+      "kind": "retention",
+      "target": "keep everything; no automatic deletion in v1",
+      "source": "deferred register item 11"
+    },
+    {
+      "id": "R62",
+      "kind": "platform",
+      "target": "Node 22 LTS, Windows host, HTTP on the LAN, no internet at run time",
+      "source": "build plan A1, A7"
+    }
+  ],
+  "work_packages": [
+    {
+      "id": "WP-1.1.1",
+      "title": "Repository, build and toolchain",
+      "traces": [
+        "R62"
+      ],
+      "owner": "either developer",
+      "estimate": "1-2",
+      "depends_on": [],
+      "phase": "P1",
+      "acceptance": "a clean copy builds, lints and passes tests with the network cable out, and the built server starts and answers an unknown route with the one error shape"
+    },
+    {
+      "id": "WP-1.1.2",
+      "title": "Configuration constants module",
+      "traces": [
+        "R46"
+      ],
+      "owner": "hub developer",
+      "estimate": "0.5-1",
+      "depends_on": [
+        "WP-1.1.1"
+      ],
+      "phase": "P1",
+      "acceptance": "a test fails on any numeric literal above 60 in a route or repository file, and changing the 8 MB cap in config changes the enforced limit"
+    },
+    {
+      "id": "WP-1.1.3",
+      "title": "Schema and migrations",
+      "traces": [
+        "R49"
+      ],
+      "owner": "hub developer",
+      "estimate": "2-3",
+      "depends_on": [
+        "WP-1.1.1"
+      ],
+      "phase": "P1",
+      "acceptance": "an empty database migrates to the full schema, a second run is a no-op, and a second database from scratch produces an identical dump"
+    },
+    {
+      "id": "WP-1.1.4",
+      "title": "Repository module and transactional transitions",
+      "traces": [
+        "R46",
+        "R47"
+      ],
+      "owner": "hub developer",
+      "estimate": "2-3",
+      "depends_on": [
+        "WP-1.1.1",
+        "WP-1.1.3"
+      ],
+      "phase": "P1",
+      "acceptance": "two concurrent claims give one grant and one 409, and a grep test finds no SQL outside the repository module"
+    },
+    {
+      "id": "WP-1.1.5",
+      "title": "Local accounts, sessions and capability check",
+      "traces": [
+        "R1",
+        "R2",
+        "R3"
+      ],
+      "owner": "hub developer",
+      "estimate": "2-4",
+      "depends_on": [
+        "WP-1.1.3",
+        "WP-1.1.4"
+      ],
+      "phase": "P1",
+      "acceptance": "a restart returns 401 on the next request, an expired session returns 401, and no handler reads a role directly"
+    },
+    {
+      "id": "WP-1.1.6",
+      "title": "Setup and seed command",
+      "traces": [
+        "R52"
+      ],
+      "owner": "hub developer",
+      "estimate": "1-2",
+      "depends_on": [
+        "WP-1.1.5"
+      ],
+      "phase": "P1",
+      "acceptance": "on an empty database it produces a SAT the grid can read, prints the tool token once, and refuses a second run without the force flag"
+    },
+    {
+      "id": "WP-1.1.7",
+      "title": "Offline install package and Windows service",
+      "traces": [
+        "R44",
+        "R62"
+      ],
+      "owner": "hub developer",
+      "estimate": "2-4",
+      "depends_on": [
+        "WP-1.1.1"
+      ],
+      "phase": "P4",
+      "acceptance": "a clean Windows machine with no internet installs from the folder, serves the app over HTTP at the fixed address, and restarts after a reboot with no manual step"
+    },
+    {
+      "id": "WP-1.1.8",
+      "title": "Backup and restore commands",
+      "traces": [
+        "R43"
+      ],
+      "owner": "hub developer",
+      "estimate": "1-2",
+      "depends_on": [
+        "WP-1.1.3",
+        "WP-1.1.4"
+      ],
+      "phase": "P4",
+      "acceptance": "a restore into a scratch folder yields identical counts and hashes, and a tampered evidence file is named by the manifest check"
+    },
+    {
+      "id": "WP-1.2.1",
+      "title": "Error catalogue and response shape",
+      "traces": [
+        "R45"
+      ],
+      "owner": "hub developer",
+      "estimate": "1",
+      "depends_on": [
+        "WP-1.1.1"
+      ],
+      "phase": "P1",
+      "acceptance": "every code in the spec has a test asserting its status, and a forced exception returns the shape with no stack trace"
+    },
+    {
+      "id": "WP-1.2.2",
+      "title": "Grid read model",
+      "traces": [
+        "R4",
+        "R9",
+        "R58"
+      ],
+      "owner": "hub developer",
+      "estimate": "1-2",
+      "depends_on": [
+        "WP-1.1.4",
+        "WP-1.2.1"
+      ],
+      "phase": "P1",
+      "acceptance": "a 100-step grid responds under 200 ms on the site laptop, and an expired lease reads open with no job running"
+    },
+    {
+      "id": "WP-1.2.3",
+      "title": "Form read model and schema pinning",
+      "traces": [
+        "R5",
+        "R6"
+      ],
+      "owner": "hub developer",
+      "estimate": "1-2",
+      "depends_on": [
+        "WP-1.1.6",
+        "WP-1.2.1"
+      ],
+      "phase": "P1",
+      "acceptance": "a second form from a second schema row is served with no code change, and the response names the pinned version"
+    },
+    {
+      "id": "WP-1.2.4",
+      "title": "Claim, renew, release and derived expiry",
+      "traces": [
+        "R7",
+        "R8",
+        "R9",
+        "R59"
+      ],
+      "owner": "hub developer",
+      "estimate": "2-3",
+      "depends_on": [
+        "WP-1.2.2"
+      ],
+      "phase": "P1",
+      "acceptance": "two browsers race and one loses with the holder and expiry named, renew moves expiry by 12 hours from the server clock, and release frees the step at once"
+    },
+    {
+      "id": "WP-1.2.5",
+      "title": "Step write with revision and value validation",
+      "traces": [
+        "R10",
+        "R11",
+        "R12",
+        "R13",
+        "R48"
+      ],
+      "owner": "hub developer",
+      "estimate": "2-3",
+      "depends_on": [
+        "WP-1.2.3",
+        "WP-1.2.4"
+      ],
+      "phase": "P1",
+      "acceptance": "each refusal carries what is needed to act, and three accepted writes leave the revision at 4"
+    },
+    {
+      "id": "WP-1.2.6",
+      "title": "Submit and form-level ready",
+      "traces": [
+        "R14",
+        "R15",
+        "R16"
+      ],
+      "owner": "hub developer",
+      "estimate": "1",
+      "depends_on": [
+        "WP-1.2.5"
+      ],
+      "phase": "P1",
+      "acceptance": "submitting twice returns the same body, submitting at an old revision returns 409 with the current revision, flags name empty required columns and slots, and ready flips only on the last submitted step"
+    },
+    {
+      "id": "WP-1.2.7",
+      "title": "Seal and edition",
+      "traces": [
+        "R17",
+        "R18",
+        "R19",
+        "R20"
+      ],
+      "owner": "hub developer",
+      "estimate": "2-3",
+      "depends_on": [
+        "WP-1.2.6"
+      ],
+      "phase": "P3",
+      "acceptance": "two seals of identical data give one edition and the same content_sha, a seal with a step open names that step, and a sealed write returns 423"
+    },
+    {
+      "id": "WP-1.2.8",
+      "title": "Amendment and re-seal",
+      "traces": [
+        "R19",
+        "R21",
+        "R22"
+      ],
+      "owner": "hub developer",
+      "estimate": "2-3",
+      "depends_on": [
+        "WP-1.2.7"
+      ],
+      "phase": "P3",
+      "acceptance": "only named steps reopen, re-seal mints exactly one edition n+1, and a drop after a write is refused with a code and a reason"
+    },
+    {
+      "id": "WP-1.2.9",
+      "title": "Audit trail coverage",
+      "traces": [
+        "R41"
+      ],
+      "owner": "hub developer",
+      "estimate": "1",
+      "depends_on": [
+        "WP-1.2.4"
+      ],
+      "phase": "P1",
+      "acceptance": "one step driven end to end yields the ordered audit rows with server time and actor"
+    },
+    {
+      "id": "WP-1.3.1",
+      "title": "Evidence upload, hash check and slot binding",
+      "traces": [
+        "R25",
+        "R26",
+        "R27",
+        "R49",
+        "R60"
+      ],
+      "owner": "hub developer",
+      "estimate": "2-3",
+      "depends_on": [
+        "WP-1.1.4",
+        "WP-1.2.5"
+      ],
+      "phase": "P2",
+      "acceptance": "8 MB passes and 8 MB plus one byte is 413 before the body is read, identical bytes give 409 with one file named by its hash, and a second image for a slot is 422"
+    },
+    {
+      "id": "WP-1.3.2",
+      "title": "Document derivative, orientation and format handling",
+      "traces": [
+        "R28"
+      ],
+      "owner": "hub developer",
+      "estimate": "1-2",
+      "depends_on": [
+        "WP-1.3.1"
+      ],
+      "phase": "P2",
+      "acceptance": "a portrait phone photo is upright in original and copy, the copy regenerates from the original, and an unconvertible file is 415 with a readable message"
+    },
+    {
+      "id": "WP-1.3.3",
+      "title": "Client capture, spool and picker",
+      "traces": [
+        "R33",
+        "R34"
+      ],
+      "owner": "client developer",
+      "estimate": "3-4",
+      "depends_on": [
+        "WP-1.2.4"
+      ],
+      "phase": "P2",
+      "acceptance": "five captures and two uploads leave the device, a reload before save restores the spool, a discarded shot appears in no request, and the camera opens with no permission prompt"
+    },
+    {
+      "id": "WP-1.3.4",
+      "title": "Client grid and step screen",
+      "traces": [
+        "R35"
+      ],
+      "owner": "client developer",
+      "estimate": "2-3",
+      "depends_on": [
+        "WP-1.2.2",
+        "WP-1.3.3"
+      ],
+      "phase": "P2",
+      "acceptance": "a step held by another account renders locked with the holder named, and submit is not offered unless this account holds the lease"
+    },
+    {
+      "id": "WP-1.3.5",
+      "title": "Screenshot request and derived status",
+      "traces": [
+        "R29",
+        "R30"
+      ],
+      "owner": "hub developer",
+      "estimate": "1-2",
+      "depends_on": [
+        "WP-1.2.4",
+        "WP-1.3.1"
+      ],
+      "phase": "P2",
+      "acceptance": "an unwritable share returns 500 trigger_unwritable and creates no row, state reaches expired on the clock with no job, and a late post is 409 expired"
+    },
+    {
+      "id": "WP-1.3.6",
+      "title": "Service principal and tool endpoint",
+      "traces": [
+        "R31"
+      ],
+      "owner": "hub developer",
+      "estimate": "1",
+      "depends_on": [
+        "WP-1.1.6"
+      ],
+      "phase": "P2",
+      "acceptance": "a wrong token is 401, the token appears in no log or error body, and disabling the principal stops the tool route and nothing else"
+    },
+    {
+      "id": "WP-1.3.7",
+      "title": "Stub capture tool for rehearsal",
+      "traces": [],
+      "owner": "either developer",
+      "estimate": "0.5-1",
+      "depends_on": [
+        "WP-1.3.5"
+      ],
+      "phase": "P2",
+      "acceptance": "WP-1.3.5 and WP-1.3.6 pass against the stub on a machine with no WinCC, and the stub is refused on a wrong token"
+    },
+    {
+      "id": "WP-1.3.8",
+      "title": "Capture tool change and handover",
+      "traces": [
+        "R32",
+        "R56"
+      ],
+      "owner": "either developer",
+      "estimate": "2-3",
+      "depends_on": [
+        "WP-1.3.5",
+        "WP-1.3.6"
+      ],
+      "phase": "P4",
+      "acceptance": "on a target that is not the live control room PC, one request stores one screenshot and still leaves a local file, and a second person reviews the change"
+    },
+    {
+      "id": "WP-1.4.1",
+      "title": "Template engine",
+      "traces": [
+        "R6",
+        "R36"
+      ],
+      "owner": "either developer",
+      "estimate": "3-5",
+      "depends_on": [
+        "WP-1.2.3",
+        "WP-1.5.4"
+      ],
+      "phase": "P3",
+      "acceptance": "a golden-file test renders the fixture twice byte-identically, and a second schema row renders a second layout with no code change"
+    },
+    {
+      "id": "WP-1.4.2",
+      "title": "Image placement and row geometry",
+      "traces": [
+        "R37",
+        "R38"
+      ],
+      "owner": "either developer",
+      "estimate": "1-2",
+      "depends_on": [
+        "WP-1.3.2",
+        "WP-1.4.1"
+      ],
+      "phase": "P3",
+      "acceptance": "no image crosses a cell or a row, a missing slot leaves a blank cell and no shift, and the workbook opens in Excel and LibreOffice with no repair prompt"
+    },
+    {
+      "id": "WP-1.4.3",
+      "title": "Bundle builder, layout and manifest",
+      "traces": [
+        "R39",
+        "R40"
+      ],
+      "owner": "either developer",
+      "estimate": "1-2",
+      "depends_on": [
+        "WP-1.2.7",
+        "WP-1.4.2"
+      ],
+      "phase": "P3",
+      "acceptance": "bundle files are named `<step_no>-<slot_id>-<short sha>.<ext>`, the manifest validates, every hash in it exists in the archive, manual files are shipped and never embedded, and the layout file alone changes the tree"
+    },
+    {
+      "id": "WP-1.4.4",
+      "title": "Compile job and download",
+      "traces": [
+        "R23",
+        "R24"
+      ],
+      "owner": "hub developer",
+      "estimate": "1-2",
+      "depends_on": [
+        "WP-1.4.3"
+      ],
+      "phase": "P3",
+      "acceptance": "both refusals name the blocking form, the same idempotency key returns the same job, and a failed job leaves no partial archive"
+    },
+    {
+      "id": "WP-1.5.1",
+      "title": "Daily test summary",
+      "traces": [
+        "R42"
+      ],
+      "owner": "hub developer",
+      "estimate": "0.5-1",
+      "depends_on": [
+        "WP-1.2.2"
+      ],
+      "phase": "P4",
+      "acceptance": "counts match the grid for the day, generating twice stores two retrievable rows, and the text names flagged steps rather than hiding them"
+    },
+    {
+      "id": "WP-1.5.2",
+      "title": "Rehearsal on a non-production target",
+      "traces": [
+        "R51"
+      ],
+      "owner": "either developer",
+      "estimate": "2-4",
+      "depends_on": [
+        "WP-1.1.7",
+        "WP-1.1.8",
+        "WP-1.3.4",
+        "WP-1.3.8",
+        "WP-1.4.4"
+      ],
+      "phase": "P4",
+      "acceptance": "one form goes from empty to a sealed edition and a bundle in one sitting, repeats the next day after a restart, and every defect is logged against a WP"
+    },
+    {
+      "id": "WP-1.5.3",
+      "title": "Site-day checklist and runbook",
+      "traces": [
+        "R50"
+      ],
+      "owner": "either developer",
+      "estimate": "1-2",
+      "depends_on": [
+        "WP-1.5.2"
+      ],
+      "phase": "P4",
+      "acceptance": "a person who did not build it follows the checklist without asking a question, and every step has a visible confirmation"
+    },
+    {
+      "id": "WP-1.5.4",
+      "title": "Standard SAT format definition",
+      "traces": [
+        "R52"
+      ],
+      "owner": "engineer",
+      "estimate": "3-4",
+      "depends_on": [],
+      "phase": "P3",
+      "acceptance": "the format is written down as one master record with columns, types, slots, sections and layout, and it renders the agreed specimen workbook"
+    },
+    {
+      "id": "WP-1.5.5",
+      "title": "Generality on a second project list",
+      "traces": [
+        "R53",
+        "R6"
+      ],
+      "owner": "engineer",
+      "estimate": "2",
+      "depends_on": [
+        "WP-1.4.2"
+      ],
+      "phase": "P3",
+      "acceptance": "a second fixture instrument list renders on the same format with no code change, and the acceptance is written down with a date"
+    },
+    {
+      "id": "WP-1.5.6",
+      "title": "Photo and site-data position",
+      "traces": [
+        "R61"
+      ],
+      "owner": "engineer",
+      "estimate": "0.5-1",
+      "depends_on": [
+        "WP-1.3.2"
+      ],
+      "phase": "P4",
+      "acceptance": "a written position says what the dataset contains, who takes it away and what is not deleted, and it ships with the checklist"
+    },
+    {
+      "id": "WP-1.5.7",
+      "title": "Pilot qualification with the signing engineer",
+      "traces": [
+        "R57"
+      ],
+      "owner": "engineer",
+      "estimate": "3",
+      "depends_on": [
+        "WP-1.5.2",
+        "WP-1.5.3",
+        "WP-1.6.1"
+      ],
+      "phase": "P5",
+      "acceptance": "the checklist run on site produces a sealed bundle a person uploads, with no builder present"
+    },
+    {
+      "id": "WP-1.5.8",
+      "title": "Instrument-list importer",
+      "traces": [
+        "R63"
+      ],
+      "owner": "either developer",
+      "estimate": "2-3",
+      "depends_on": [
+        "WP-1.1.6"
+      ],
+      "phase": "P3",
+      "acceptance": "a 30-row spreadsheet imports as 30 steps; a duplicate tag or a missing level is refused by name and the table is unchanged"
+    },
+    {
+      "id": "WP-1.6.1",
+      "title": "Hub machine and fixed LAN address",
+      "traces": [
+        "R55"
+      ],
+      "owner": "platform",
+      "estimate": "2-3",
+      "depends_on": [],
+      "phase": "P3",
+      "acceptance": "the machine and the address are named in the checklist, and a tablet reaches the app at that address"
+    },
+    {
+      "id": "WP-1.6.2",
+      "title": "Site network confirmation in writing",
+      "traces": [
+        "R54"
+      ],
+      "owner": "platform",
+      "estimate": "0.5-1",
+      "depends_on": [],
+      "phase": "P1",
+      "acceptance": "a message or document from the site network owner states whether client isolation is on, and it is quoted in 06"
+    },
+    {
+      "id": "WP-1.6.3",
+      "title": "Site access, induction and dates",
+      "traces": [],
+      "owner": "platform",
+      "estimate": "1-2",
+      "depends_on": [],
+      "phase": "P1",
+      "acceptance": "the site date, the induction requirement and the nominated signing engineer are named in writing"
+    },
+    {
+      "id": "WP-1.6.4",
+      "title": "Backup drive and its custodian",
+      "traces": [],
+      "owner": "platform",
+      "estimate": "0.5-1",
+      "depends_on": [
+        "WP-1.1.8"
+      ],
+      "phase": "P4",
+      "acceptance": "a named drive exists, a named person runs it, and the restore has been exercised once on that drive"
+    },
+    {
+      "id": "WP-1.6.5",
+      "title": "Site install and pilot supervision",
+      "traces": [
+        "R44",
+        "R57"
+      ],
+      "owner": "platform",
+      "estimate": "2-3",
+      "depends_on": [
+        "WP-1.1.7",
+        "WP-1.5.3",
+        "WP-1.6.1",
+        "WP-1.6.3"
+      ],
+      "phase": "P5",
+      "acceptance": "the Hub installs on site, the run produces a sealed bundle, and a rollback to the previous backup is demonstrated before the test starts"
+    },
+    {
+      "id": "WP-1.6.6",
+      "title": "Capture tool go/no-go with the control room owner",
+      "traces": [
+        "R56"
+      ],
+      "owner": "solution architect",
+      "estimate": "1-2",
+      "depends_on": [
+        "WP-1.6.2"
+      ],
+      "phase": "P4",
+      "acceptance": "one of the three outcomes is written down with a date, and the demo script matches it"
+    },
+    {
+      "id": "WP-1.7.1",
+      "title": "Source routing: spreadsheet as cells, scans to OCR",
+      "traces": [
+        "R64"
+      ],
+      "owner": "either developer",
+      "estimate": "1-2",
+      "depends_on": [
+        "WP-1.5.8"
+      ],
+      "phase": "P6",
+      "acceptance": "an XLSX goes straight to the importer and is never OCR'd; a scan or PDF is routed to the OCR path and reports why"
+    },
+    {
+      "id": "WP-1.7.2",
+      "title": "OCR and layout extraction",
+      "traces": [
+        "R65"
+      ],
+      "owner": "either developer",
+      "estimate": "3-4",
+      "depends_on": [
+        "WP-1.7.1"
+      ],
+      "phase": "P6",
+      "acceptance": "on the labelled sample, table rows come back in reading order with no merged or split row, and every token carries a confidence and a bounding box"
+    },
+    {
+      "id": "WP-1.7.3",
+      "title": "Region segmentation pass",
+      "traces": [
+        "R65"
+      ],
+      "owner": "either developer",
+      "estimate": "3-4",
+      "depends_on": [
+        "WP-1.7.2"
+      ],
+      "phase": "P6",
+      "acceptance": "region roles are correct on the labelled sample, and an unlabelled region is reported rather than guessed"
+    },
+    {
+      "id": "WP-1.7.4",
+      "title": "Schema mapping to the master record",
+      "traces": [
+        "R64"
+      ],
+      "owner": "either developer",
+      "estimate": "3-4",
+      "depends_on": [
+        "WP-1.7.3",
+        "WP-1.5.4"
+      ],
+      "phase": "P6",
+      "acceptance": "every proposed field cites its source column, required flags stay unset by default, and a wrong proposal shows in the diff rather than being applied"
+    },
+    {
+      "id": "WP-1.7.5",
+      "title": "Step-list candidate output",
+      "traces": [
+        "R64"
+      ],
+      "owner": "either developer",
+      "estimate": "2-3",
+      "depends_on": [
+        "WP-1.7.4"
+      ],
+      "phase": "P6",
+      "acceptance": "output is a CSV that WP-1.5.8 accepts unchanged, and a duplicate tag is refused by the import rather than repaired"
+    },
+    {
+      "id": "WP-1.7.6",
+      "title": "Review surface: accept, edit, reject",
+      "traces": [
+        "R64"
+      ],
+      "owner": "client developer",
+      "estimate": "3-5",
+      "depends_on": [
+        "WP-1.7.5"
+      ],
+      "phase": "P6",
+      "acceptance": "a reviewer clears a 30-row document without opening the original, and every rejection is recorded"
+    },
+    {
+      "id": "WP-1.7.7",
+      "title": "Labelled sample authoring",
+      "traces": [
+        "R66"
+      ],
+      "owner": "engineer",
+      "estimate": "2-3",
+      "depends_on": [],
+      "phase": "P6",
+      "acceptance": "a set of real pages with hand-entered truth exists on paper, covering both step tags and schema columns"
+    },
+    {
+      "id": "WP-1.7.8",
+      "title": "Score harness and written threshold",
+      "traces": [
+        "R66"
+      ],
+      "owner": "either developer",
+      "estimate": "2-3",
+      "depends_on": [
+        "WP-1.7.5",
+        "WP-1.7.7"
+      ],
+      "phase": "P6",
+      "acceptance": "exact match, false add and false drop are reported per field, and the threshold is written and agreed by someone other than its author"
+    }
+  ],
+  "phases": [
+    {
+      "id": "P1",
+      "outcome": "One step, one browser, one record: sign in, see the grid, claim, write, submit, and a claim race decided with a readable message",
+      "exit": "On the site laptop, two browsers claim one step: one gets 200, the other 409 naming the holder and expiry. A restart returns 401 on the next request. Every action leaves its audit row.",
+      "includes": "WP-1.1.1 – WP-1.1.6, WP-1.2.1 – WP-1.2.6, WP-1.2.9, WP-1.6.2, WP-1.6.3"
+    },
+    {
+      "id": "P2",
+      "outcome": "Capture on a tablet: a site photo through the device camera, a spool that survives a reload, evidence hashed and slot-bound, and a screenshot round trip against a stub",
+      "exit": "Five captures and two uploads on the tablet: 3000 px enforced, 8 MB plus one byte refused, identical bytes stored once, the spool restored after a reload, and a screenshot request reaching `expired` at 90 s with no job running",
+      "includes": "WP-1.3.1 – WP-1.3.7"
+    },
+    {
+      "id": "P3",
+      "outcome": "The standard format, the project's steps, a sealed form and an uploadable bundle",
+      "exit": "The standard format renders a workbook; an instrument-list spreadsheet imports as one step per row; the fixture form seals as edition 1; an edit returns 423; an amendment reopening one step produces exactly edition 2; the bundle opens in Excel and LibreOffice with no repair prompt and its manifest validates",
+      "includes": "WP-1.2.7, WP-1.2.8, WP-1.4.1 – WP-1.4.4, WP-1.5.4, WP-1.5.5, WP-1.5.8, WP-1.6.1"
+    },
+    {
+      "id": "P4",
+      "outcome": "Rehearsal with the real screenshot leg, backup and restore proven, and a checklist someone else can follow",
+      "exit": "One form goes from empty to a sealed edition and a bundle in one sitting against a non-production WinCC target, repeats the next morning after a restart, and a backup restores into a scratch folder with identical counts and hashes",
+      "includes": "WP-1.1.7, WP-1.1.8, WP-1.3.8, WP-1.5.1 – WP-1.5.3, WP-1.5.6, WP-1.6.4, WP-1.6.6"
+    },
+    {
+      "id": "P5",
+      "outcome": "Site day: the Hub installed on site, one real SAT captured, sealed, compiled, uploaded to ACC, and accepted by the signer",
+      "exit": "The signer accepts a bundle produced on site, with no builder present, and the rollback to the previous backup is demonstrated before the test starts",
+      "includes": "WP-1.5.7, WP-1.6.5"
+    },
+    {
+      "id": "P6",
+      "outcome": "Conditional: a scanned or PDF instrument list becomes a reviewed candidate that commits through the normal import",
+      "exit": "A labelled sample scores at or above a written threshold someone else agreed to, and a rejected row shows in the diff rather than reaching the record. Not started unless a scanned list actually arrives",
+      "includes": "WP-1.7.1 – WP-1.7.8"
+    }
+  ]
+}

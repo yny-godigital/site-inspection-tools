@@ -1,0 +1,184 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "S15: define our standard SAT format",
+    "subtitle": "One master record, versioned by us, agreed before any site work",
+    "locale": "en",
+    "output": "plan-2026-11-25-sat-poc-v1/presentation/s15-format.html",
+    "parentHref": "index.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "engineer",
+      "type": "external",
+      "label": "Engineer",
+      "sublabel": "on site",
+      "icon": "person"
+    },
+    {
+      "id": "architect",
+      "type": "external",
+      "label": "Architect",
+      "sublabel": "owns the format",
+      "icon": "person"
+    },
+    {
+      "id": "cli",
+      "type": "backend",
+      "label": "Command line",
+      "sublabel": "setup, backup"
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "Record store",
+      "sublabel": "SQLite, WAL",
+      "explanation": "Steps, leases, evidence metadata, editions, amendments, audit and jobs. All SQL sits behind one repository module, so the v2 move to Postgres is a driver swap and one migration."
+    },
+    {
+      "id": "workbook",
+      "type": "backend",
+      "label": "Workbook",
+      "sublabel": "generated xlsx"
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 274,
+      "label": "Agree"
+    },
+    {
+      "from": 282,
+      "to": 490,
+      "label": "Pin the version"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "engineer",
+      "to": "architect",
+      "y": 170,
+      "label": "agree what the form must show",
+      "variant": "default"
+    },
+    {
+      "id": "m2",
+      "from": "architect",
+      "to": "engineer",
+      "y": 198,
+      "label": "columns, sections, slots, layout",
+      "variant": "return",
+      "note": "One master record, owned by us, not a client template"
+    },
+    {
+      "id": "m3",
+      "from": "engineer",
+      "to": "cli",
+      "y": 264,
+      "label": "import the master record as JSON",
+      "variant": "emphasis",
+      "payload": {
+        "contentType": "application/json",
+        "summary": "one master record: columns with types and order, slots, sections, layout geometry"
+      }
+    },
+    {
+      "id": "m4",
+      "from": "cli",
+      "to": "engineer",
+      "y": 292,
+      "label": "refused: the offending field",
+      "variant": "return",
+      "note": "Duplicate column id, unknown type, a slot with no kind"
+    },
+    {
+      "id": "m5",
+      "from": "cli",
+      "to": "store",
+      "y": 358,
+      "label": "form_schema row, version 1",
+      "variant": "default"
+    },
+    {
+      "id": "m6",
+      "from": "cli",
+      "to": "store",
+      "y": 386,
+      "label": "form row pinned to that version",
+      "variant": "default",
+      "note": "Immutable once pinned; after a seal, a change is a new form"
+    },
+    {
+      "id": "m7",
+      "from": "cli",
+      "to": "workbook",
+      "y": 452,
+      "label": "render the specimen",
+      "variant": "default"
+    },
+    {
+      "id": "m8",
+      "from": "workbook",
+      "to": "engineer",
+      "y": 480,
+      "label": "one sheet, one row per step",
+      "variant": "return",
+      "note": "Reviewed by eye, because no test can see a layout"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "engineer",
+      "from": 162,
+      "to": 488,
+      "type": "external"
+    },
+    {
+      "participant": "architect",
+      "from": 162,
+      "to": 206,
+      "type": "external"
+    },
+    {
+      "participant": "cli",
+      "from": 256,
+      "to": 460,
+      "type": "backend"
+    },
+    {
+      "participant": "store",
+      "from": 350,
+      "to": 394,
+      "type": "database"
+    },
+    {
+      "participant": "workbook",
+      "from": 444,
+      "to": 488,
+      "type": "backend"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "The format is ours",
+      "items": [
+        "There is no client SAT form to reconcile against",
+        "One standard format, versioned by us (A11)",
+        "A new project is a new step list, not a new layout"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Why versioning matters",
+      "items": [
+        "A sealed edition must always render the same bytes",
+        "So a schema change after the first seal is a new form"
+      ]
+    }
+  ]
+}

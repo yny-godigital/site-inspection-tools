@@ -1,0 +1,253 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "S9: amend, correct, re-seal, supersede",
+    "subtitle": "A correction reopens named steps and issues the next edition of that form",
+    "locale": "en",
+    "output": "plan-2026-11-25-sat-poc-v1/presentation/s09-amendment.html",
+    "parentHref": "index.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "engineer",
+      "type": "external",
+      "label": "Engineer",
+      "sublabel": "on site",
+      "icon": "person"
+    },
+    {
+      "id": "client",
+      "type": "frontend",
+      "label": "Browser client",
+      "sublabel": "served by the Hub"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Hub API",
+      "sublabel": "Fastify"
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "Record store",
+      "sublabel": "SQLite, WAL",
+      "explanation": "Steps, leases, evidence metadata, editions, amendments, audit and jobs. All SQL sits behind one repository module, so the v2 move to Postgres is a driver swap and one migration."
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 330,
+      "label": "Open"
+    },
+    {
+      "from": 338,
+      "to": 469,
+      "label": "Correct"
+    },
+    {
+      "from": 477,
+      "to": 636,
+      "label": "Re-seal"
+    },
+    {
+      "from": 671,
+      "to": 719,
+      "label": "Drop rules"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "engineer",
+      "to": "client",
+      "y": 170,
+      "label": "open an amendment",
+      "variant": "default"
+    },
+    {
+      "id": "m2",
+      "from": "client",
+      "to": "api",
+      "y": 198,
+      "label": "POST /amendments, reason",
+      "variant": "emphasis",
+      "note": "Only the named steps reopen, and only inside that form",
+      "payload": {
+        "contentType": "application/json",
+        "sample": {
+          "form_id": "cx2-instrument-v1",
+          "edition_id": "ed_01H\u2026",
+          "reason": "reading 12 typed as 4.20",
+          "step_ids": [
+            "st_7f3a"
+          ]
+        }
+      }
+    },
+    {
+      "id": "m3",
+      "from": "api",
+      "to": "client",
+      "y": 264,
+      "label": "refused, no reason",
+      "variant": "return"
+    },
+    {
+      "id": "m4",
+      "from": "api",
+      "to": "store",
+      "y": 292,
+      "label": "amendment row, named steps",
+      "variant": "default"
+    },
+    {
+      "id": "m5",
+      "from": "api",
+      "to": "client",
+      "y": 320,
+      "label": "201 named steps unsealed",
+      "variant": "return"
+    },
+    {
+      "id": "m6",
+      "from": "engineer",
+      "to": "client",
+      "y": 348,
+      "label": "correct the step",
+      "variant": "default"
+    },
+    {
+      "id": "m7",
+      "from": "client",
+      "to": "api",
+      "y": 376,
+      "label": "PUT /steps/{id}",
+      "variant": "emphasis",
+      "note": "Evidence is appended, never replaced"
+    },
+    {
+      "id": "m8",
+      "from": "api",
+      "to": "store",
+      "y": 431,
+      "label": "revision + 1, evidence appended",
+      "variant": "default"
+    },
+    {
+      "id": "m9",
+      "from": "api",
+      "to": "client",
+      "y": 459,
+      "label": "200",
+      "variant": "return"
+    },
+    {
+      "id": "m10",
+      "from": "client",
+      "to": "api",
+      "y": 487,
+      "label": "POST /compile",
+      "variant": "default"
+    },
+    {
+      "id": "m11",
+      "from": "api",
+      "to": "client",
+      "y": 515,
+      "label": "409 form_amended",
+      "variant": "return",
+      "note": "The seal is known to be wrong"
+    },
+    {
+      "id": "m12",
+      "from": "client",
+      "to": "api",
+      "y": 570,
+      "label": "POST /forms/{id}/seal",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m13",
+      "from": "api",
+      "to": "store",
+      "y": 598,
+      "label": "edition n+1, n superseded",
+      "variant": "default"
+    },
+    {
+      "id": "m14",
+      "from": "api",
+      "to": "client",
+      "y": 626,
+      "label": "201 edition n+1",
+      "variant": "return",
+      "note": "One new edition of the whole form"
+    },
+    {
+      "id": "m15",
+      "from": "client",
+      "to": "api",
+      "y": 681,
+      "label": "drop after a write",
+      "variant": "default"
+    },
+    {
+      "id": "m16",
+      "from": "api",
+      "to": "client",
+      "y": 709,
+      "label": "409 refused, with a reason",
+      "variant": "return",
+      "note": "Cancelling must not be a way to hide an edit"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "engineer",
+      "from": 162,
+      "to": 356,
+      "type": "external"
+    },
+    {
+      "participant": "client",
+      "from": 162,
+      "to": 717,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 190,
+      "to": 717,
+      "type": "backend"
+    },
+    {
+      "participant": "store",
+      "from": 284,
+      "to": 606,
+      "type": "database"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Whole-form editions",
+      "items": [
+        "Write scope is the named steps; supersede scope is the form",
+        "Five wrong readings are one amendment and one edition",
+        "Both editions are kept, never edited"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Two deliberate refusals",
+      "items": [
+        "Compile is refused while an amendment is open",
+        "A drop after a write is refused with a reason"
+      ]
+    }
+  ]
+}

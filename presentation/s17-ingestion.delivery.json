@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "329f4a22-0050-44f8-bab5-838a91aa14f2",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "/home/ccw/.hermes/home-project-scale/workspace/project-scale/cost-estimation/v0_2/Pilot/plan-2026-11-25-sat-poc-v1/presentation/sources/s17-ingestion.sequence.json",
+  "output": "/home/ccw/.hermes/home-project-scale/workspace/project-scale/cost-estimation/v0_2/Pilot/plan-2026-11-25-sat-poc-v1/presentation/s17-ingestion.html",
+  "specification": {
+    "sha256": "de1bf6065436ee89bf07845eacfce52a2b169892b29fcc0a90227f43c458f564",
+    "bytes": 4023
+  },
+  "artifact": {
+    "sha256": "2f3a1ab94085c38a458a29ee67aa3923f12961cb9e7b450bd716bb15e8006aa9",
+    "bytes": 928389
+  }
+}

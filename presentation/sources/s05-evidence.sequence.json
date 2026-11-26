@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "S5: capture to stored evidence",
+    "subtitle": "Spool, reload, hash, deduplicate, one image per slot per revision",
+    "locale": "en",
+    "output": "plan-2026-11-25-sat-poc-v1/presentation/s05-evidence.html",
+    "parentHref": "index.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "engineer",
+      "type": "external",
+      "label": "Engineer",
+      "sublabel": "on site",
+      "icon": "person"
+    },
+    {
+      "id": "client",
+      "type": "frontend",
+      "label": "Browser client",
+      "sublabel": "served by the Hub"
+    },
+    {
+      "id": "spool",
+      "type": "database",
+      "label": "Browser spool",
+      "sublabel": "IndexedDB",
+      "explanation": "In-flight captures and one in-flight form. It turns 'Wi-Fi dropped, start again' into 'Wi-Fi dropped, carry on'. It is never the record."
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Hub API",
+      "sublabel": "Fastify"
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "Record store",
+      "sublabel": "SQLite, WAL",
+      "explanation": "Steps, leases, evidence metadata, editions, amendments, audit and jobs. All SQL sits behind one repository module, so the v2 move to Postgres is a driver swap and one migration."
+    },
+    {
+      "id": "evidence",
+      "type": "database",
+      "label": "Evidence store",
+      "sublabel": "files by hash",
+      "explanation": "Bytes named by their SHA-256, never inside the database. The original is authoritative and the 1000 px document copy is regenerable."
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 319,
+      "label": "Capture and spool"
+    },
+    {
+      "from": 327,
+      "to": 375,
+      "label": "Pre-flight"
+    },
+    {
+      "from": 421,
+      "to": 574,
+      "label": "Upload"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "engineer",
+      "to": "client",
+      "y": 170,
+      "label": "tap capture",
+      "variant": "default"
+    },
+    {
+      "id": "m2",
+      "from": "client",
+      "to": "spool",
+      "y": 198,
+      "label": "re-encode 3000 px, spool",
+      "variant": "default",
+      "note": "File input, not a video stream"
+    },
+    {
+      "id": "m3",
+      "from": "client",
+      "to": "spool",
+      "y": 253,
+      "label": "restore after a reload",
+      "variant": "dashed"
+    },
+    {
+      "id": "m4",
+      "from": "engineer",
+      "to": "client",
+      "y": 281,
+      "label": "keep two, discard three",
+      "variant": "default"
+    },
+    {
+      "id": "m5",
+      "from": "client",
+      "to": "api",
+      "y": 309,
+      "label": "HEAD /evidence/{sha256}",
+      "variant": "default"
+    },
+    {
+      "id": "m6",
+      "from": "api",
+      "to": "client",
+      "y": 337,
+      "label": "200 already held, or 404",
+      "variant": "return"
+    },
+    {
+      "id": "m7",
+      "from": "client",
+      "to": "api",
+      "y": 365,
+      "label": "POST /evidence, multipart",
+      "variant": "emphasis",
+      "note": "Cap checked before body; one image per slot",
+      "payload": {
+        "contentType": "multipart/form-data",
+        "sample": {
+          "client_hash": "b3d1e0\u20264a7",
+          "kind": "site_photo",
+          "slot_id": "photo_1",
+          "step_id": "st_7f3a",
+          "captured_at": "2026-12-01T09:12:41Z"
+        }
+      }
+    },
+    {
+      "id": "m8",
+      "from": "api",
+      "to": "client",
+      "y": 431,
+      "label": "413, 400, 415 or 422",
+      "variant": "return",
+      "note": "too_large, hash_mismatch, unsupported_media, slot_occupied"
+    },
+    {
+      "id": "m9",
+      "from": "api",
+      "to": "store",
+      "y": 508,
+      "label": "evidence row, slot, revision",
+      "variant": "default"
+    },
+    {
+      "id": "m10",
+      "from": "api",
+      "to": "evidence",
+      "y": 536,
+      "label": "write evidence/{sha256}",
+      "variant": "default"
+    },
+    {
+      "id": "m11",
+      "from": "api",
+      "to": "client",
+      "y": 564,
+      "label": "201 sha256, bytes, size",
+      "variant": "return",
+      "note": "The file name is its hash"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "engineer",
+      "from": 162,
+      "to": 289,
+      "type": "external"
+    },
+    {
+      "participant": "client",
+      "from": 162,
+      "to": 572,
+      "type": "frontend"
+    },
+    {
+      "participant": "spool",
+      "from": 190,
+      "to": 261,
+      "type": "database"
+    },
+    {
+      "participant": "api",
+      "from": 301,
+      "to": 572,
+      "type": "backend"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Content addressed",
+      "items": [
+        "A resend is deduplicated, not stored twice",
+        "Bytes are files, never BLOBs",
+        "The spool is in-flight capture only, never the record"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Named refusals",
+      "items": [
+        "413 too_large, 400 hash_mismatch, 415 unsupported_media",
+        "422 slot_occupied, and 409 already_exists is fine"
+      ]
+    }
+  ]
+}

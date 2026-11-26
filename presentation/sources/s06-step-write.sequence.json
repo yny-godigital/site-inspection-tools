@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "S6: write a step and survive the refusals",
+    "subtitle": "A revision check, schema validation, and an evidence hash the Hub must already hold",
+    "locale": "en",
+    "output": "plan-2026-11-25-sat-poc-v1/presentation/s06-step-write.html",
+    "parentHref": "index.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "engineer",
+      "type": "external",
+      "label": "Engineer",
+      "sublabel": "on site",
+      "icon": "person"
+    },
+    {
+      "id": "client",
+      "type": "frontend",
+      "label": "Browser client",
+      "sublabel": "served by the Hub"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Hub API",
+      "sublabel": "Fastify"
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "Record store",
+      "sublabel": "SQLite, WAL",
+      "explanation": "Steps, leases, evidence metadata, editions, amendments, audit and jobs. All SQL sits behind one repository module, so the v2 move to Postgres is a driver swap and one migration."
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 330,
+      "label": "Write"
+    },
+    {
+      "from": 365,
+      "to": 496,
+      "label": "Four refusals"
+    },
+    {
+      "from": 504,
+      "to": 552,
+      "label": "Accepted"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "engineer",
+      "to": "client",
+      "y": 170,
+      "label": "type readings",
+      "variant": "default"
+    },
+    {
+      "id": "m2",
+      "from": "client",
+      "to": "api",
+      "y": 198,
+      "label": "PUT /steps/{id}, revision",
+      "variant": "emphasis",
+      "note": "Values are validated against the pinned schema first",
+      "payload": {
+        "contentType": "application/json",
+        "sample": {
+          "revision": 2,
+          "expected_revision": 1,
+          "device_id": "dv_01H\u2026",
+          "client_seq": 41,
+          "values": {
+            "reading": "4.02",
+            "unit": "bar"
+          },
+          "evidence": [
+            "b3d1e0\u20264a7"
+          ]
+        }
+      }
+    },
+    {
+      "id": "m3",
+      "from": "api",
+      "to": "store",
+      "y": 264,
+      "label": "read step and schema",
+      "variant": "default"
+    },
+    {
+      "id": "m4",
+      "from": "store",
+      "to": "api",
+      "y": 292,
+      "label": "current revision",
+      "variant": "return"
+    },
+    {
+      "id": "m5",
+      "from": "api",
+      "to": "client",
+      "y": 320,
+      "label": "409 stale_revision",
+      "variant": "return",
+      "note": "Offer a reload, never a silent merge"
+    },
+    {
+      "id": "m6",
+      "from": "api",
+      "to": "client",
+      "y": 375,
+      "label": "422 invalid_values",
+      "variant": "return"
+    },
+    {
+      "id": "m7",
+      "from": "api",
+      "to": "client",
+      "y": 403,
+      "label": "422 unknown_evidence",
+      "variant": "return",
+      "note": "The photo never reached the Hub"
+    },
+    {
+      "id": "m8",
+      "from": "api",
+      "to": "client",
+      "y": 458,
+      "label": "423 sealed",
+      "variant": "return"
+    },
+    {
+      "id": "m9",
+      "from": "api",
+      "to": "store",
+      "y": 486,
+      "label": "values, revision + 1",
+      "variant": "default"
+    },
+    {
+      "id": "m10",
+      "from": "api",
+      "to": "store",
+      "y": 514,
+      "label": "audit row",
+      "variant": "dashed"
+    },
+    {
+      "id": "m11",
+      "from": "api",
+      "to": "client",
+      "y": 542,
+      "label": "200 revision, stored_at",
+      "variant": "return",
+      "note": "One write, one revision"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "client",
+      "from": 162,
+      "to": 550,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 190,
+      "to": 550,
+      "type": "backend"
+    },
+    {
+      "participant": "store",
+      "from": 256,
+      "to": 522,
+      "type": "database"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "The three that matter",
+      "items": [
+        "409 stale_revision carries the current revision",
+        "422 unknown_evidence names the missing hashes",
+        "423 sends the caller to an amendment"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Ready for v2",
+      "items": [
+        "Every write carries device_id and client_seq",
+        "Ids are client generated, so a replay is possible later"
+      ]
+    }
+  ]
+}

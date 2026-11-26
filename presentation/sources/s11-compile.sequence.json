@@ -1,0 +1,260 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "S11: compile and collect the bundle",
+    "subtitle": "A job, a manifest, and a download a person uploads by hand",
+    "locale": "en",
+    "output": "plan-2026-11-25-sat-poc-v1/presentation/s11-compile.html",
+    "parentHref": "index.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "client",
+      "type": "frontend",
+      "label": "Browser client",
+      "sublabel": "served by the Hub"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Hub API",
+      "sublabel": "Fastify"
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "Record store",
+      "sublabel": "SQLite, WAL",
+      "explanation": "Steps, leases, evidence metadata, editions, amendments, audit and jobs. All SQL sits behind one repository module, so the v2 move to Postgres is a driver swap and one migration."
+    },
+    {
+      "id": "worker",
+      "type": "backend",
+      "label": "Compile worker",
+      "sublabel": "exceljs, offline"
+    },
+    {
+      "id": "evidence",
+      "type": "database",
+      "label": "Evidence store",
+      "sublabel": "files by hash",
+      "explanation": "Bytes named by their SHA-256, never inside the database. The original is authoritative and the 1000 px document copy is regenerable."
+    },
+    {
+      "id": "acc",
+      "type": "external",
+      "label": "ACC portal",
+      "sublabel": "manual upload"
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 364,
+      "label": "Preconditions"
+    },
+    {
+      "from": 372,
+      "to": 542,
+      "label": "Compile"
+    },
+    {
+      "from": 550,
+      "to": 654,
+      "label": "Collect"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "client",
+      "to": "api",
+      "y": 170,
+      "label": "POST /compile, idempotency key",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m2",
+      "from": "api",
+      "to": "store",
+      "y": 198,
+      "label": "check the preconditions",
+      "variant": "default"
+    },
+    {
+      "id": "m3",
+      "from": "api",
+      "to": "client",
+      "y": 226,
+      "label": "409 form_unsealed",
+      "variant": "return"
+    },
+    {
+      "id": "m4",
+      "from": "api",
+      "to": "client",
+      "y": 254,
+      "label": "409 form_amended",
+      "variant": "return",
+      "payload": {
+        "contentType": "application/json",
+        "sample": {
+          "error": {
+            "code": "form_amended",
+            "details": {
+              "form_id": "cx2-instrument-v1",
+              "amendment_id": "am_01H\u2026",
+              "opened_by": "kai.xin"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "m5",
+      "from": "api",
+      "to": "store",
+      "y": 282,
+      "label": "create job, queued",
+      "variant": "default"
+    },
+    {
+      "id": "m6",
+      "from": "api",
+      "to": "client",
+      "y": 310,
+      "label": "202 jobId",
+      "variant": "return",
+      "note": "Same key, same job"
+    },
+    {
+      "id": "m7",
+      "from": "api",
+      "to": "worker",
+      "y": 354,
+      "label": "start the job",
+      "variant": "default"
+    },
+    {
+      "id": "m8",
+      "from": "worker",
+      "to": "store",
+      "y": 382,
+      "label": "read sealed forms and steps",
+      "variant": "default"
+    },
+    {
+      "id": "m9",
+      "from": "store",
+      "to": "worker",
+      "y": 410,
+      "label": "rows, hashes, content_sha",
+      "variant": "return"
+    },
+    {
+      "id": "m10",
+      "from": "worker",
+      "to": "evidence",
+      "y": 438,
+      "label": "read originals and copies",
+      "variant": "default"
+    },
+    {
+      "id": "m11",
+      "from": "worker",
+      "to": "store",
+      "y": 466,
+      "label": "manifest, bundle_sha, done",
+      "variant": "default",
+      "note": "One workbook per form, one image per slot"
+    },
+    {
+      "id": "m12",
+      "from": "client",
+      "to": "api",
+      "y": 532,
+      "label": "GET /compile/{jobId}",
+      "variant": "default"
+    },
+    {
+      "id": "m13",
+      "from": "api",
+      "to": "client",
+      "y": 560,
+      "label": "running, done or failed",
+      "variant": "return"
+    },
+    {
+      "id": "m14",
+      "from": "client",
+      "to": "api",
+      "y": 588,
+      "label": "GET /bundle/{satId}",
+      "variant": "default"
+    },
+    {
+      "id": "m15",
+      "from": "api",
+      "to": "client",
+      "y": 616,
+      "label": "200, one zip",
+      "variant": "return"
+    },
+    {
+      "id": "m16",
+      "from": "client",
+      "to": "acc",
+      "y": 644,
+      "label": "a person uploads by hand",
+      "variant": "dashed",
+      "note": "A person uploads; a failed job leaves no archive"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "client",
+      "from": 162,
+      "to": 652,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 162,
+      "to": 624,
+      "type": "backend"
+    },
+    {
+      "participant": "store",
+      "from": 190,
+      "to": 474,
+      "type": "database"
+    },
+    {
+      "participant": "worker",
+      "from": 346,
+      "to": 474,
+      "type": "backend"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "The manifest is ours",
+      "items": [
+        "Edition, revision, content_sha and the flags per step",
+        "The tree is one config file, provisional by design",
+        "The original is marked authoritative over the copy"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "A compile never changes state",
+      "items": [
+        "It refuses on a draft form or an open amendment",
+        "So a rehearsal compile cannot lock the test"
+      ]
+    }
+  ]
+}

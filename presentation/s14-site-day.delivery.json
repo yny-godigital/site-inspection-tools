@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "36d9714d-c0c7-4682-a27f-f7eea02affa6",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "/home/ccw/.hermes/home-project-scale/workspace/project-scale/cost-estimation/v0_2/Pilot/plan-2026-11-25-sat-poc-v1/presentation/sources/s14-site-day.sequence.json",
+  "output": "/home/ccw/.hermes/home-project-scale/workspace/project-scale/cost-estimation/v0_2/Pilot/plan-2026-11-25-sat-poc-v1/presentation/s14-site-day.html",
+  "specification": {
+    "sha256": "a5cd77656f9fe93d83f86b71058924eeede0c69dcf10dbbb0e48f200b57070ee",
+    "bytes": 5436
+  },
+  "artifact": {
+    "sha256": "e5ea19962a1a0efac6b96056f4b2641195f02a22d73afe141e35470c30f5f3cc",
+    "bytes": 937043
+  }
+}

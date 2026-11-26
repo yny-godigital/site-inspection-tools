@@ -1,0 +1,222 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "S12: daily summary, backup and restore",
+    "subtitle": "Text a person copies, and two commands that run with no network",
+    "locale": "en",
+    "output": "plan-2026-11-25-sat-poc-v1/presentation/s12-summary-backup.html",
+    "parentHref": "index.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "engineer",
+      "type": "external",
+      "label": "Engineer",
+      "sublabel": "on site",
+      "icon": "person"
+    },
+    {
+      "id": "client",
+      "type": "frontend",
+      "label": "Browser client",
+      "sublabel": "served by the Hub"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Hub API",
+      "sublabel": "Fastify"
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "Record store",
+      "sublabel": "SQLite, WAL",
+      "explanation": "Steps, leases, evidence metadata, editions, amendments, audit and jobs. All SQL sits behind one repository module, so the v2 move to Postgres is a driver swap and one migration."
+    },
+    {
+      "id": "cli",
+      "type": "backend",
+      "label": "Command line",
+      "sublabel": "setup, backup"
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 347,
+      "label": "Summary"
+    },
+    {
+      "from": 382,
+      "to": 486,
+      "label": "Backup"
+    },
+    {
+      "from": 494,
+      "to": 586,
+      "label": "Restore"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "engineer",
+      "to": "client",
+      "y": 170,
+      "label": "ask for the daily summary",
+      "variant": "default"
+    },
+    {
+      "id": "m2",
+      "from": "client",
+      "to": "api",
+      "y": 198,
+      "label": "GET /summary/daily",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m3",
+      "from": "api",
+      "to": "store",
+      "y": 226,
+      "label": "count steps and flags",
+      "variant": "default"
+    },
+    {
+      "id": "m4",
+      "from": "api",
+      "to": "store",
+      "y": 254,
+      "label": "insert daily_report row",
+      "variant": "default"
+    },
+    {
+      "id": "m5",
+      "from": "api",
+      "to": "client",
+      "y": 282,
+      "label": "200, text",
+      "variant": "return",
+      "note": "Stored before it is shared"
+    },
+    {
+      "id": "m6",
+      "from": "engineer",
+      "to": "client",
+      "y": 337,
+      "label": "copy it to WhatsApp",
+      "variant": "dashed",
+      "note": "No gateway, no attachment, no recipient list"
+    },
+    {
+      "id": "m7",
+      "from": "engineer",
+      "to": "cli",
+      "y": 392,
+      "label": "backup",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m8",
+      "from": "cli",
+      "to": "store",
+      "y": 420,
+      "label": "online backup, evidence copy",
+      "variant": "default"
+    },
+    {
+      "id": "m9",
+      "from": "cli",
+      "to": "store",
+      "y": 448,
+      "label": "manifest: counts, files, database hash",
+      "variant": "default"
+    },
+    {
+      "id": "m10",
+      "from": "cli",
+      "to": "engineer",
+      "y": 476,
+      "label": "the archive and its manifest",
+      "variant": "return"
+    },
+    {
+      "id": "m11",
+      "from": "cli",
+      "to": "store",
+      "y": 504,
+      "label": "restore into a scratch folder",
+      "variant": "default"
+    },
+    {
+      "id": "m12",
+      "from": "cli",
+      "to": "engineer",
+      "y": 532,
+      "label": "identical counts and hashes",
+      "variant": "return",
+      "note": "Proven before site day"
+    },
+    {
+      "id": "m13",
+      "from": "cli",
+      "to": "engineer",
+      "y": 576,
+      "label": "tampered file reported",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "engineer",
+      "from": 162,
+      "to": 584,
+      "type": "external"
+    },
+    {
+      "participant": "client",
+      "from": 162,
+      "to": 345,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 190,
+      "to": 290,
+      "type": "backend"
+    },
+    {
+      "participant": "store",
+      "from": 218,
+      "to": 512,
+      "type": "database"
+    },
+    {
+      "participant": "cli",
+      "from": 384,
+      "to": 584,
+      "type": "backend"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "The record survives the chat",
+      "items": [
+        "Every report is stored before it is shared",
+        "Sending is a person's act, not an automatic push"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Proven, not assumed",
+      "items": [
+        "The restore is exercised once before site day",
+        "A tampered evidence file is named, not ignored"
+      ]
+    }
+  ]
+}

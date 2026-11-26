@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "S16: instrument list to step list",
+    "subtitle": "The project's IO or instrument list supplies the tags; our format supplies the layout",
+    "locale": "en",
+    "output": "plan-2026-11-25-sat-poc-v1/presentation/s16-instrument-list.html",
+    "parentHref": "index.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "engineer",
+      "type": "external",
+      "label": "Engineer",
+      "sublabel": "on site",
+      "icon": "person"
+    },
+    {
+      "id": "cli",
+      "type": "backend",
+      "label": "Command line",
+      "sublabel": "setup, backup"
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "Record store",
+      "sublabel": "SQLite, WAL",
+      "explanation": "Steps, leases, evidence metadata, editions, amendments, audit and jobs. All SQL sits behind one repository module, so the v2 move to Postgres is a driver swap and one migration."
+    },
+    {
+      "id": "client",
+      "type": "frontend",
+      "label": "Browser client",
+      "sublabel": "served by the Hub"
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 318,
+      "label": "Import"
+    },
+    {
+      "from": 326,
+      "to": 430,
+      "label": "Check against the list"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "engineer",
+      "to": "cli",
+      "y": 170,
+      "label": "import the instrument list (XLSX)",
+      "variant": "emphasis",
+      "note": "Expected columns: tag, level, step number, section"
+    },
+    {
+      "id": "m2",
+      "from": "cli",
+      "to": "store",
+      "y": 225,
+      "label": "validate every row, then insert",
+      "variant": "default"
+    },
+    {
+      "id": "m3",
+      "from": "cli",
+      "to": "engineer",
+      "y": 253,
+      "label": "refused: duplicate tag, missing level",
+      "variant": "return",
+      "note": "Refused by name, and nothing is loaded"
+    },
+    {
+      "id": "m4",
+      "from": "store",
+      "to": "cli",
+      "y": 308,
+      "label": "one step per row",
+      "variant": "return"
+    },
+    {
+      "id": "m5",
+      "from": "engineer",
+      "to": "client",
+      "y": 336,
+      "label": "open the grid",
+      "variant": "default"
+    },
+    {
+      "id": "m6",
+      "from": "client",
+      "to": "store",
+      "y": 364,
+      "label": "read the steps",
+      "variant": "default"
+    },
+    {
+      "id": "m7",
+      "from": "store",
+      "to": "client",
+      "y": 392,
+      "label": "every tag in the list",
+      "variant": "return"
+    },
+    {
+      "id": "m8",
+      "from": "client",
+      "to": "engineer",
+      "y": 420,
+      "label": "count and spot check",
+      "variant": "return",
+      "note": "The list is the source of truth; fix the spreadsheet"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "engineer",
+      "from": 162,
+      "to": 428,
+      "type": "external"
+    },
+    {
+      "participant": "cli",
+      "from": 162,
+      "to": 316,
+      "type": "backend"
+    },
+    {
+      "participant": "store",
+      "from": 217,
+      "to": 400,
+      "type": "database"
+    },
+    {
+      "participant": "client",
+      "from": 328,
+      "to": 428,
+      "type": "frontend"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "The list is the input",
+      "items": [
+        "Tags, levels and step numbers come from the client's list",
+        "The form comes from our format plus those steps"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Refuse, do not repair",
+      "items": [
+        "A duplicate tag is refused by name, not merged",
+        "Nothing is half-loaded, so the grid always matches the list"
+      ]
+    }
+  ]
+}

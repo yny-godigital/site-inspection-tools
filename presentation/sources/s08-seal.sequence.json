@@ -1,0 +1,193 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "S8: seal one form",
+    "subtitle": "A person closes one form; a compile never seals anything",
+    "locale": "en",
+    "output": "plan-2026-11-25-sat-poc-v1/presentation/s08-seal.html",
+    "parentHref": "index.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "engineer",
+      "type": "external",
+      "label": "Engineer",
+      "sublabel": "on site",
+      "icon": "person"
+    },
+    {
+      "id": "client",
+      "type": "frontend",
+      "label": "Browser client",
+      "sublabel": "served by the Hub"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Hub API",
+      "sublabel": "Fastify"
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "Record store",
+      "sublabel": "SQLite, WAL",
+      "explanation": "Steps, leases, evidence metadata, editions, amendments, audit and jobs. All SQL sits behind one repository module, so the v2 move to Postgres is a driver swap and one migration."
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 402,
+      "label": "Seal"
+    },
+    {
+      "from": 410,
+      "to": 486,
+      "label": "After the seal"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "engineer",
+      "to": "client",
+      "y": 170,
+      "label": "seal the Cx2 form",
+      "variant": "default"
+    },
+    {
+      "id": "m2",
+      "from": "client",
+      "to": "api",
+      "y": 198,
+      "label": "POST /forms/{id}/seal",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m3",
+      "from": "api",
+      "to": "store",
+      "y": 226,
+      "label": "read steps and evidence",
+      "variant": "default"
+    },
+    {
+      "id": "m4",
+      "from": "api",
+      "to": "client",
+      "y": 254,
+      "label": "409 steps_open",
+      "variant": "return"
+    },
+    {
+      "id": "m5",
+      "from": "api",
+      "to": "client",
+      "y": 282,
+      "label": "409 already_sealed",
+      "variant": "return",
+      "note": "A double tap returns the same edition"
+    },
+    {
+      "id": "m6",
+      "from": "api",
+      "to": "store",
+      "y": 337,
+      "label": "edition row, content_sha",
+      "variant": "default",
+      "note": "Hash of schema, steps, evidence"
+    },
+    {
+      "id": "m7",
+      "from": "api",
+      "to": "client",
+      "y": 392,
+      "label": "201 edition, number, sha",
+      "variant": "return",
+      "payload": {
+        "contentType": "application/json",
+        "sample": {
+          "edition_id": "ed_01H\u2026",
+          "edition_number": 1,
+          "schema_version": "2026-11-24.1",
+          "content_sha": "9a41c2\u20260fe",
+          "flags": [
+            "st_7f3a: no scada_screenshot"
+          ]
+        }
+      }
+    },
+    {
+      "id": "m8",
+      "from": "engineer",
+      "to": "client",
+      "y": 420,
+      "label": "try to edit a sealed step",
+      "variant": "default"
+    },
+    {
+      "id": "m9",
+      "from": "client",
+      "to": "api",
+      "y": 448,
+      "label": "PUT /steps/{id}",
+      "variant": "default"
+    },
+    {
+      "id": "m10",
+      "from": "api",
+      "to": "client",
+      "y": 476,
+      "label": "423 sealed, form and edition",
+      "variant": "return",
+      "note": "The app offers an amendment"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "engineer",
+      "from": 162,
+      "to": 428,
+      "type": "external"
+    },
+    {
+      "participant": "client",
+      "from": 162,
+      "to": 484,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 190,
+      "to": 484,
+      "type": "backend"
+    },
+    {
+      "participant": "store",
+      "from": 218,
+      "to": 345,
+      "type": "database"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "The edition is the artefact",
+      "items": [
+        "One form, one edition, one content_sha",
+        "A rehearsal compile cannot lock the test"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Editable until sealed",
+      "items": [
+        "423 on every write afterwards",
+        "The correction route is an amendment, not an edit"
+      ]
+    }
+  ]
+}

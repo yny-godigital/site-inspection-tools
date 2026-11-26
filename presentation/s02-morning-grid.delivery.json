@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "59f6c5b4-892c-469c-94a3-96fcc55f25f8",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "/home/ccw/.hermes/home-project-scale/workspace/project-scale/cost-estimation/v0_2/Pilot/plan-2026-11-25-sat-poc-v1/presentation/sources/s02-morning-grid.sequence.json",
+  "output": "/home/ccw/.hermes/home-project-scale/workspace/project-scale/cost-estimation/v0_2/Pilot/plan-2026-11-25-sat-poc-v1/presentation/s02-morning-grid.html",
+  "specification": {
+    "sha256": "8f82e27fb38b724fdb11551d534fe61d046aff4c9959c856f6234ed93f5b3d5a",
+    "bytes": 4742
+  },
+  "artifact": {
+    "sha256": "72056b98796146c1ff64c4e0501f78d7e216eb36a53a97d0a7746a4510a5256c",
+    "bytes": 932392
+  }
+}

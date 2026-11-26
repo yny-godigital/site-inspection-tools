@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "S1: sign in and carry a capability",
+    "subtitle": "A local account behind a seam, a server-side session, and a restart that ends it",
+    "locale": "en",
+    "output": "plan-2026-11-25-sat-poc-v1/presentation/s01-sign-in.html",
+    "parentHref": "index.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "engineer",
+      "type": "external",
+      "label": "Engineer",
+      "sublabel": "on site",
+      "icon": "person"
+    },
+    {
+      "id": "client",
+      "type": "frontend",
+      "label": "Browser client",
+      "sublabel": "served by the Hub"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Hub API",
+      "sublabel": "Fastify"
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "Record store",
+      "sublabel": "SQLite, WAL",
+      "explanation": "Steps, leases, evidence metadata, editions, amendments, audit and jobs. All SQL sits behind one repository module, so the v2 move to Postgres is a driver swap and one migration."
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 348,
+      "label": "Sign in"
+    },
+    {
+      "from": 383,
+      "to": 431,
+      "label": "Capability"
+    },
+    {
+      "from": 439,
+      "to": 515,
+      "label": "Sign out"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "engineer",
+      "to": "client",
+      "y": 170,
+      "label": "open the fixed LAN address",
+      "variant": "default"
+    },
+    {
+      "id": "m2",
+      "from": "client",
+      "to": "api",
+      "y": 198,
+      "label": "POST /auth/login",
+      "variant": "emphasis",
+      "payload": {
+        "contentType": "application/json",
+        "sample": {
+          "username": "kai.xin",
+          "password": "\u2026"
+        }
+      }
+    },
+    {
+      "id": "m3",
+      "from": "api",
+      "to": "store",
+      "y": 226,
+      "label": "read identity and user",
+      "variant": "default"
+    },
+    {
+      "id": "m4",
+      "from": "store",
+      "to": "api",
+      "y": 254,
+      "label": "user, role",
+      "variant": "return"
+    },
+    {
+      "id": "m5",
+      "from": "api",
+      "to": "store",
+      "y": 282,
+      "label": "insert session, 12 h",
+      "variant": "default"
+    },
+    {
+      "id": "m6",
+      "from": "api",
+      "to": "client",
+      "y": 310,
+      "label": "200, HttpOnly cookie",
+      "variant": "return"
+    },
+    {
+      "id": "m7",
+      "from": "api",
+      "to": "client",
+      "y": 338,
+      "label": "401, one error shape",
+      "variant": "return",
+      "note": "No hint whether the account exists"
+    },
+    {
+      "id": "m8",
+      "from": "client",
+      "to": "api",
+      "y": 393,
+      "label": "GET /me",
+      "variant": "default"
+    },
+    {
+      "id": "m9",
+      "from": "api",
+      "to": "client",
+      "y": 421,
+      "label": "role and capabilities",
+      "variant": "return"
+    },
+    {
+      "id": "m10",
+      "from": "client",
+      "to": "api",
+      "y": 449,
+      "label": "POST /auth/logout",
+      "variant": "default"
+    },
+    {
+      "id": "m11",
+      "from": "api",
+      "to": "store",
+      "y": 477,
+      "label": "delete the session row",
+      "variant": "dashed"
+    },
+    {
+      "id": "m12",
+      "from": "api",
+      "to": "client",
+      "y": 505,
+      "label": "200, cookie cleared",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "client",
+      "from": 162,
+      "to": 513,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 190,
+      "to": 513,
+      "type": "backend"
+    },
+    {
+      "participant": "store",
+      "from": 218,
+      "to": 485,
+      "type": "database"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "One check per route",
+      "items": [
+        "The session is server side, so a restart ends every sign-in",
+        "One role and one capability map in v1",
+        "No handler reads a role directly"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "What a failure looks like",
+      "items": [
+        "401 in the one error shape, never a hint about the account",
+        "No account lockout machinery in v1"
+      ]
+    }
+  ]
+}

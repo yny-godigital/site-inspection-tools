@@ -1,0 +1,227 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "S4: lease lifecycle",
+    "subtitle": "Claim, race, renew, release, and an expiry nothing has to run",
+    "locale": "en",
+    "output": "plan-2026-11-25-sat-poc-v1/presentation/s04-lease.html",
+    "parentHref": "index.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "engineer_a",
+      "type": "external",
+      "label": "Engineer A",
+      "sublabel": "device A",
+      "icon": "person"
+    },
+    {
+      "id": "engineer_b",
+      "type": "external",
+      "label": "Engineer B",
+      "sublabel": "device B",
+      "icon": "person"
+    },
+    {
+      "id": "client_a",
+      "type": "frontend",
+      "label": "Browser A"
+    },
+    {
+      "id": "client_b",
+      "type": "frontend",
+      "label": "Browser B"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Hub API",
+      "sublabel": "Fastify"
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "Record store",
+      "sublabel": "SQLite, WAL",
+      "explanation": "Steps, leases, evidence metadata, editions, amendments, audit and jobs. All SQL sits behind one repository module, so the v2 move to Postgres is a driver swap and one migration."
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 320,
+      "label": "Claim"
+    },
+    {
+      "from": 328,
+      "to": 442,
+      "label": "Race"
+    },
+    {
+      "from": 450,
+      "to": 582,
+      "label": "Renew and release"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "engineer_a",
+      "to": "client_a",
+      "y": 170,
+      "label": "claim a step",
+      "variant": "default"
+    },
+    {
+      "id": "m2",
+      "from": "client_a",
+      "to": "api",
+      "y": 198,
+      "label": "POST /steps/{id}/claim",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m3",
+      "from": "api",
+      "to": "store",
+      "y": 226,
+      "label": "lease check, insert lease",
+      "variant": "default"
+    },
+    {
+      "id": "m4",
+      "from": "store",
+      "to": "api",
+      "y": 254,
+      "label": "free, granted 12 h",
+      "variant": "return"
+    },
+    {
+      "id": "m5",
+      "from": "api",
+      "to": "client_a",
+      "y": 282,
+      "label": "200 lease",
+      "variant": "return"
+    },
+    {
+      "id": "m6",
+      "from": "engineer_b",
+      "to": "client_b",
+      "y": 310,
+      "label": "claim the same step",
+      "variant": "default"
+    },
+    {
+      "id": "m7",
+      "from": "client_b",
+      "to": "api",
+      "y": 338,
+      "label": "POST /steps/{id}/claim",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m8",
+      "from": "api",
+      "to": "client_b",
+      "y": 366,
+      "label": "409, holder and expiry",
+      "variant": "return",
+      "note": "One winner, and the loser is told who"
+    },
+    {
+      "id": "m9",
+      "from": "client_a",
+      "to": "api",
+      "y": 432,
+      "label": "POST /steps/{id}/renew",
+      "variant": "default"
+    },
+    {
+      "id": "m10",
+      "from": "api",
+      "to": "client_a",
+      "y": 460,
+      "label": "200, 12 h from the server clock",
+      "variant": "return"
+    },
+    {
+      "id": "m11",
+      "from": "client_a",
+      "to": "api",
+      "y": 488,
+      "label": "POST /steps/{id}/release",
+      "variant": "default"
+    },
+    {
+      "id": "m12",
+      "from": "api",
+      "to": "store",
+      "y": 516,
+      "label": "clear lease, audit row",
+      "variant": "default"
+    },
+    {
+      "id": "m13",
+      "from": "client_b",
+      "to": "api",
+      "y": 544,
+      "label": "POST /steps/{id}/claim",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m14",
+      "from": "api",
+      "to": "client_b",
+      "y": 572,
+      "label": "200, claimable at once",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "client_a",
+      "from": 162,
+      "to": 496,
+      "type": "frontend"
+    },
+    {
+      "participant": "client_b",
+      "from": 302,
+      "to": 580,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 190,
+      "to": 580,
+      "type": "backend"
+    },
+    {
+      "participant": "store",
+      "from": 218,
+      "to": 524,
+      "type": "database"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "One writer per step",
+      "items": [
+        "The Hub decides the claim, online, with a 12 h lease",
+        "No offline claim in v1, so there is nothing to reconcile"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Expiry is a fact",
+      "items": [
+        "An expired lease reads open on the next read",
+        "Release frees the step immediately"
+      ]
+    }
+  ]
+}

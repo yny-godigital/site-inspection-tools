@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAT PoC v1 — 17 sequence diagrams</title>
+<style>
+  :root { --bg:#0b0f14; --panel:#141b23; --ink:#e8eef5; --dim:#93a1b1; --line:#233040; --accent:#5eead4; }
+  @media (prefers-color-scheme: light) {
+    :root { --bg:#f7f9fb; --panel:#ffffff; --ink:#16202b; --dim:#5b6b7c; --line:#dbe3ec; --accent:#0f766e; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:16px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+  header { max-width:1100px; margin:0 auto; padding:56px 24px 8px; }
+  h1 { font-size:clamp(26px,3.4vw,40px); line-height:1.15; margin:0 0 10px; letter-spacing:-.02em; }
+  .sub { color:var(--dim); max-width:70ch; margin:0 0 6px; }
+  .note { color:var(--dim); font-size:14px; max-width:78ch; border-left:2px solid var(--accent);
+          padding-left:12px; margin:18px 0 0; }
+  main { max-width:1100px; margin:0 auto; padding:28px 24px 72px; }
+  h2 { font-size:13px; text-transform:uppercase; letter-spacing:.08em; color:var(--dim);
+       margin:32px 0 10px; font-weight:600; }
+  h2:first-of-type { margin-top:8px; }
+  ol { list-style:none; margin:0; padding:0; display:grid; gap:10px; }
+  ol li { background:var(--panel); border:1px solid var(--line); border-radius:12px; }
+  a.card { display:grid; grid-template-columns:64px 1fr; gap:16px; padding:16px 18px;
+           color:inherit; text-decoration:none; border-radius:12px; }
+  a.card:hover, a.card:focus-visible { border-color:var(--accent); outline:none; }
+  .id { font-variant-numeric:tabular-nums; font-weight:650; color:var(--accent); font-size:18px; }
+  .t { font-weight:600; margin:0 0 3px; }
+  .d { color:var(--dim); font-size:14px; margin:0; }
+  footer { max-width:1100px; margin:0 auto; padding:0 24px 64px; color:var(--dim); font-size:14px; }
+  code { background:var(--panel); border:1px solid var(--line); padding:1px 5px; border-radius:5px; font-size:13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>SAT PoC v1 — 17 sequence diagrams</h1>
+  <p class="sub">Every flow of the pilot, in message order, with the branches that matter — including the work
+  that happens before site commissioning. Companion to <code>04-design.md</code> in the pack, which is the
+  authoritative copy of these flows.</p>
+  <p class="note">One site, one SAT, Cx2 and Cx3, no internet, no AI on the December path. The SAT format is
+  ours, not the client's, and the project's instrument list supplies the steps. Where a diagram here and a
+  flow table in <code>04-design.md</code> disagree, the document wins and this copy is regenerated.</p>
+</header>
+<main>
+<h2>Before site commissioning</h2>
+<ol>
+  <li><a class="card" href="s13-setup.html"><span class="id">S13</span><span>
+    <p class="t">Install, accounts and the tool token</p>
+    <p class="d">An empty Hub becomes a usable one; the format and the steps arrive in S15 and S16.</p></span></a></li>
+  <li><a class="card" href="s15-format.html"><span class="id">S15</span><span>
+    <p class="t">Define our standard SAT format</p>
+    <p class="d">One master record, versioned by us, agreed before any site work.</p></span></a></li>
+  <li><a class="card" href="s16-instrument-list.html"><span class="id">S16</span><span>
+    <p class="t">Instrument list to step list</p>
+    <p class="d">The project's IO or instrument list supplies the tags; our format supplies the layout.</p></span></a></li>
+  <li><a class="card" href="s17-ingestion.html"><span class="id">S17</span><span>
+    <p class="t">Scanned list to candidate, then a person commits</p>
+    <p class="d">Conditional and gated: it proposes, a person commits through the same import.</p></span></a></li>
+</ol>
+
+<h2>The pilot itself</h2>
+<ol>
+  <li><a class="card" href="s01-sign-in.html"><span class="id">S1</span><span>
+    <p class="t">Sign in and carry a capability</p>
+    <p class="d">A local account behind a seam, a server-side session, and a restart that ends it.</p></span></a></li>
+  <li><a class="card" href="s02-morning-grid.html"><span class="id">S2</span><span>
+    <p class="t">Open the app the next morning</p>
+    <p class="d">Session, grid, and what happened to yesterday's claim.</p></span></a></li>
+  <li><a class="card" href="s03-form-read.html"><span class="id">S3</span><span>
+    <p class="t">Read a form and review its flags</p>
+    <p class="d">Columns, slots and sections come from the pinned schema version.</p></span></a></li>
+  <li><a class="card" href="s04-lease.html"><span class="id">S4</span><span>
+    <p class="t">Lease lifecycle</p>
+    <p class="d">Claim, race, renew, release, and an expiry nothing has to run.</p></span></a></li>
+  <li><a class="card" href="s05-evidence.html"><span class="id">S5</span><span>
+    <p class="t">Capture to stored evidence</p>
+    <p class="d">Spool, reload, hash, deduplicate, one image per slot per revision.</p></span></a></li>
+  <li><a class="card" href="s06-step-write.html"><span class="id">S6</span><span>
+    <p class="t">Write a step and survive the refusals</p>
+    <p class="d">A revision check, schema validation, and an evidence hash the Hub must already hold.</p></span></a></li>
+  <li><a class="card" href="s07-submit.html"><span class="id">S7</span><span>
+    <p class="t">Submit, flags, and form-level ready</p>
+    <p class="d">Saved is not finished; a person says when a step is done.</p></span></a></li>
+  <li><a class="card" href="s08-seal.html"><span class="id">S8</span><span>
+    <p class="t">Seal one form</p>
+    <p class="d">A person closes one form; a compile never seals anything.</p></span></a></li>
+  <li><a class="card" href="s09-amendment.html"><span class="id">S9</span><span>
+    <p class="t">Amend, correct, re-seal, supersede</p>
+    <p class="d">A correction reopens named steps and issues the next edition of that form.</p></span></a></li>
+  <li><a class="card" href="s10-screenshot.html"><span class="id">S10</span><span>
+    <p class="t">The screenshot integration</p>
+    <p class="d">Trigger out through the share, the image back over HTTP, state derived on the clock.</p></span></a></li>
+  <li><a class="card" href="s11-compile.html"><span class="id">S11</span><span>
+    <p class="t">Compile and collect the bundle</p>
+    <p class="d">A job, a manifest, and a download a person uploads by hand.</p></span></a></li>
+  <li><a class="card" href="s12-summary-backup.html"><span class="id">S12</span><span>
+    <p class="t">Daily summary, backup and restore</p>
+    <p class="d">Text a person copies, and two commands that run with no network.</p></span></a></li>
+  <li><a class="card" href="s14-site-day.html"><span class="id">S14</span><span>
+    <p class="t">Site day</p>
+    <p class="d">Install, run one real SAT, seal, compile, upload, and a signer accepts.</p></span></a></li>
+</ol>
+</main>
+<footer>
+  <p>Each diagram is one standalone file with dark and light themes and a still or live toggle, and a Back
+  control to this page. Regenerate from <code>sources/</code> with archify; see <code>README.md</code> in
+  this folder.</p>
+</footer>
+</body>
+</html>

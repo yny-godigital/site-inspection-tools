@@ -1,0 +1,163 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "S3: read a form and review its flags",
+    "subtitle": "Columns, slots and sections come from the pinned schema version",
+    "locale": "en",
+    "output": "plan-2026-11-25-sat-poc-v1/presentation/s03-form-read.html",
+    "parentHref": "index.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "engineer",
+      "type": "external",
+      "label": "Engineer",
+      "sublabel": "on site",
+      "icon": "person"
+    },
+    {
+      "id": "client",
+      "type": "frontend",
+      "label": "Browser client",
+      "sublabel": "served by the Hub"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Hub API",
+      "sublabel": "Fastify"
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "Record store",
+      "sublabel": "SQLite, WAL",
+      "explanation": "Steps, leases, evidence metadata, editions, amendments, audit and jobs. All SQL sits behind one repository module, so the v2 move to Postgres is a driver swap and one migration."
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 348,
+      "label": "Read"
+    },
+    {
+      "from": 383,
+      "to": 403,
+      "label": "Flags"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "engineer",
+      "to": "client",
+      "y": 170,
+      "label": "open the Cx2 form",
+      "variant": "default"
+    },
+    {
+      "id": "m2",
+      "from": "client",
+      "to": "api",
+      "y": 198,
+      "label": "GET /forms/{formId}",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m3",
+      "from": "api",
+      "to": "store",
+      "y": 226,
+      "label": "form row, pinned schema",
+      "variant": "default"
+    },
+    {
+      "id": "m4",
+      "from": "store",
+      "to": "api",
+      "y": 254,
+      "label": "schema id and version",
+      "variant": "return"
+    },
+    {
+      "id": "m5",
+      "from": "api",
+      "to": "store",
+      "y": 282,
+      "label": "steps, values, evidence",
+      "variant": "default"
+    },
+    {
+      "id": "m6",
+      "from": "store",
+      "to": "api",
+      "y": 310,
+      "label": "rows per slot",
+      "variant": "return"
+    },
+    {
+      "id": "m7",
+      "from": "api",
+      "to": "client",
+      "y": 338,
+      "label": "200 columns, slots, steps",
+      "variant": "return",
+      "note": "Empty required columns and empty slots"
+    },
+    {
+      "id": "m8",
+      "from": "client",
+      "to": "engineer",
+      "y": 393,
+      "label": "flags and slot progress",
+      "variant": "return"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "engineer",
+      "from": 162,
+      "to": 401,
+      "type": "external"
+    },
+    {
+      "participant": "client",
+      "from": 162,
+      "to": 401,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 190,
+      "to": 346,
+      "type": "backend"
+    },
+    {
+      "participant": "store",
+      "from": 218,
+      "to": 318,
+      "type": "database"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "The schema is the document",
+      "items": [
+        "Column order is configuration, not a template",
+        "A second form is a second schema row, no code change"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Flags are advice, not a gate",
+      "items": [
+        "A flag travels into the manifest",
+        "A seal still refuses on an unfinished step"
+      ]
+    }
+  ]
+}

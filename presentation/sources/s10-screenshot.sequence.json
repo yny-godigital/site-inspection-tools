@@ -1,0 +1,249 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "S10: the screenshot integration",
+    "subtitle": "Trigger out through the share, the image back over HTTP, state derived on the clock",
+    "locale": "en",
+    "output": "plan-2026-11-25-sat-poc-v1/presentation/s10-screenshot.html",
+    "parentHref": "index.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "client",
+      "type": "frontend",
+      "label": "Browser client",
+      "sublabel": "served by the Hub"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Hub API",
+      "sublabel": "Fastify"
+    },
+    {
+      "id": "share",
+      "type": "external",
+      "label": "Trigger folder",
+      "sublabel": "SMB share"
+    },
+    {
+      "id": "tool",
+      "type": "external",
+      "label": "Capture tool",
+      "sublabel": "WinCC screen",
+      "explanation": "The existing control room capture tool, changed to accept a request id and post the PNG back. It is silent: the Hub never learns why a shot failed."
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "Record store",
+      "sublabel": "SQLite, WAL",
+      "explanation": "Steps, leases, evidence metadata, editions, amendments, audit and jobs. All SQL sits behind one repository module, so the v2 move to Postgres is a driver swap and one migration."
+    },
+    {
+      "id": "evidence",
+      "type": "database",
+      "label": "Evidence store",
+      "sublabel": "files by hash",
+      "explanation": "Bytes named by their SHA-256, never inside the database. The original is authoritative and the 1000 px document copy is regenerable."
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 347,
+      "label": "Request"
+    },
+    {
+      "from": 382,
+      "to": 618,
+      "label": "Shoot and push"
+    },
+    {
+      "from": 653,
+      "to": 729,
+      "label": "Poll"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "client",
+      "to": "api",
+      "y": 170,
+      "label": "POST /requests/screenshot",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m2",
+      "from": "api",
+      "to": "client",
+      "y": 198,
+      "label": "500 trigger_unwritable",
+      "variant": "return",
+      "note": "No row is created, so nothing waits"
+    },
+    {
+      "id": "m3",
+      "from": "api",
+      "to": "share",
+      "y": 253,
+      "label": "trigger with request id",
+      "variant": "default"
+    },
+    {
+      "id": "m4",
+      "from": "api",
+      "to": "store",
+      "y": 281,
+      "label": "request row, expires in 90 s",
+      "variant": "default"
+    },
+    {
+      "id": "m5",
+      "from": "api",
+      "to": "client",
+      "y": 309,
+      "label": "202 id, 90 s to live",
+      "variant": "return"
+    },
+    {
+      "id": "m6",
+      "from": "share",
+      "to": "tool",
+      "y": 337,
+      "label": "the tool picks it up",
+      "variant": "dashed",
+      "note": "A file drop passes a network owner"
+    },
+    {
+      "id": "m7",
+      "from": "tool",
+      "to": "api",
+      "y": 392,
+      "label": "POST /evidence/screenshot",
+      "variant": "security"
+    },
+    {
+      "id": "m8",
+      "from": "api",
+      "to": "tool",
+      "y": 420,
+      "label": "401, 404 or 409",
+      "variant": "return",
+      "note": "bad_service_token, unknown_request, expired"
+    },
+    {
+      "id": "m9",
+      "from": "api",
+      "to": "evidence",
+      "y": 486,
+      "label": "hash and store the PNG",
+      "variant": "default"
+    },
+    {
+      "id": "m10",
+      "from": "api",
+      "to": "store",
+      "y": 514,
+      "label": "served_evidence_id, served_at",
+      "variant": "default"
+    },
+    {
+      "id": "m11",
+      "from": "api",
+      "to": "tool",
+      "y": 542,
+      "label": "201 sha256",
+      "variant": "return",
+      "note": "The same evidence path as a site photo"
+    },
+    {
+      "id": "m12",
+      "from": "client",
+      "to": "api",
+      "y": 608,
+      "label": "GET /requests/{id}, poll",
+      "variant": "emphasis",
+      "note": "Every 2 s until expiry"
+    },
+    {
+      "id": "m13",
+      "from": "api",
+      "to": "client",
+      "y": 663,
+      "label": "pending",
+      "variant": "return"
+    },
+    {
+      "id": "m14",
+      "from": "api",
+      "to": "client",
+      "y": 691,
+      "label": "ready, with sha256",
+      "variant": "return"
+    },
+    {
+      "id": "m15",
+      "from": "api",
+      "to": "client",
+      "y": 719,
+      "label": "expired, no hash",
+      "variant": "return",
+      "note": "No failed state: the Hub cannot see the tool"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "client",
+      "from": 162,
+      "to": 727,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 162,
+      "to": 727,
+      "type": "backend"
+    },
+    {
+      "participant": "share",
+      "from": 245,
+      "to": 345,
+      "type": "external"
+    },
+    {
+      "participant": "tool",
+      "from": 329,
+      "to": 550,
+      "type": "external"
+    },
+    {
+      "participant": "store",
+      "from": 273,
+      "to": 522,
+      "type": "database"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Two legs on purpose",
+      "items": [
+        "The trigger travels through the share, because it is allowed",
+        "The image comes back over HTTP, where a timestamp is worth having"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Silent by design",
+      "items": [
+        "The Hub cannot observe the tool failing, so it never says why",
+        "Three states: pending, ready, expired",
+        "The engineer looks at the screenshot before accepting it"
+      ]
+    }
+  ]
+}

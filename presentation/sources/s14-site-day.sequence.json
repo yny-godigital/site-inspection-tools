@@ -1,0 +1,261 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "S14: site day",
+    "subtitle": "Install, run one real SAT, seal, compile, upload, and a signer accepts",
+    "locale": "en",
+    "output": "plan-2026-11-25-sat-poc-v1/presentation/s14-site-day.html",
+    "parentHref": "index.html",
+    "quality_profile": "showcase"
+  },
+  "participants": [
+    {
+      "id": "platform",
+      "type": "external",
+      "label": "Platform",
+      "sublabel": "site machine"
+    },
+    {
+      "id": "engineer",
+      "type": "external",
+      "label": "Engineer",
+      "sublabel": "on site",
+      "icon": "person"
+    },
+    {
+      "id": "tablet",
+      "type": "frontend",
+      "label": "Tablet",
+      "sublabel": "the tested device"
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "Hub API",
+      "sublabel": "Fastify"
+    },
+    {
+      "id": "tool",
+      "type": "external",
+      "label": "Capture tool",
+      "sublabel": "WinCC screen",
+      "explanation": "The existing control room capture tool, changed to accept a request id and post the PNG back. It is silent: the Hub never learns why a shot failed."
+    },
+    {
+      "id": "acc",
+      "type": "external",
+      "label": "ACC portal",
+      "sublabel": "manual upload"
+    },
+    {
+      "id": "signer",
+      "type": "external",
+      "label": "Signing engineer",
+      "icon": "person"
+    }
+  ],
+  "segments": [
+    {
+      "from": 160,
+      "to": 291,
+      "label": "Install and rollback"
+    },
+    {
+      "from": 299,
+      "to": 413,
+      "label": "Capture"
+    },
+    {
+      "from": 421,
+      "to": 581,
+      "label": "Seal and bundle"
+    },
+    {
+      "from": 589,
+      "to": 637,
+      "label": "Accept"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m1",
+      "from": "platform",
+      "to": "api",
+      "y": 170,
+      "label": "install the folder, start service",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m2",
+      "from": "api",
+      "to": "platform",
+      "y": 198,
+      "label": "served at the fixed address",
+      "variant": "return"
+    },
+    {
+      "id": "m3",
+      "from": "platform",
+      "to": "api",
+      "y": 226,
+      "label": "restore the previous backup",
+      "variant": "default",
+      "note": "Rollback proven before the test"
+    },
+    {
+      "id": "m4",
+      "from": "engineer",
+      "to": "tablet",
+      "y": 281,
+      "label": "sign in, open the grid",
+      "variant": "default"
+    },
+    {
+      "id": "m5",
+      "from": "tablet",
+      "to": "api",
+      "y": 309,
+      "label": "claim, capture, type, submit",
+      "variant": "emphasis",
+      "note": "Wi-Fi isolation confirmed in writing first"
+    },
+    {
+      "id": "m6",
+      "from": "tool",
+      "to": "api",
+      "y": 375,
+      "label": "the PNG for each request id",
+      "variant": "security"
+    },
+    {
+      "id": "m7",
+      "from": "engineer",
+      "to": "tablet",
+      "y": 403,
+      "label": "seal the form",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m8",
+      "from": "tablet",
+      "to": "api",
+      "y": 431,
+      "label": "POST /forms/{id}/seal",
+      "variant": "default"
+    },
+    {
+      "id": "m9",
+      "from": "api",
+      "to": "tablet",
+      "y": 459,
+      "label": "edition 1, content_sha",
+      "variant": "return"
+    },
+    {
+      "id": "m10",
+      "from": "engineer",
+      "to": "tablet",
+      "y": 487,
+      "label": "compile and download",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m11",
+      "from": "tablet",
+      "to": "api",
+      "y": 515,
+      "label": "POST /compile, GET bundle",
+      "variant": "default"
+    },
+    {
+      "id": "m12",
+      "from": "api",
+      "to": "tablet",
+      "y": 543,
+      "label": "one zip and its manifest",
+      "variant": "return"
+    },
+    {
+      "id": "m13",
+      "from": "engineer",
+      "to": "acc",
+      "y": 571,
+      "label": "upload the zip by hand",
+      "variant": "dashed"
+    },
+    {
+      "id": "m14",
+      "from": "signer",
+      "to": "acc",
+      "y": 599,
+      "label": "review and accept",
+      "variant": "emphasis"
+    },
+    {
+      "id": "m15",
+      "from": "acc",
+      "to": "signer",
+      "y": 627,
+      "label": "accepted, outside the app",
+      "variant": "return",
+      "note": "No acceptance record in the app"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "platform",
+      "from": 162,
+      "to": 234,
+      "type": "external"
+    },
+    {
+      "participant": "engineer",
+      "from": 273,
+      "to": 579,
+      "type": "external"
+    },
+    {
+      "participant": "tablet",
+      "from": 273,
+      "to": 551,
+      "type": "frontend"
+    },
+    {
+      "participant": "api",
+      "from": 162,
+      "to": 551,
+      "type": "backend"
+    },
+    {
+      "participant": "acc",
+      "from": 563,
+      "to": 635,
+      "type": "external"
+    },
+    {
+      "participant": "signer",
+      "from": 591,
+      "to": 635,
+      "type": "external"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "The witnessed event",
+      "items": [
+        "One real SAT, captured on the day it is tested",
+        "The bundle is upload-ready; a person still clicks upload"
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "What this day depends on",
+      "items": [
+        "The Wi-Fi answer in writing",
+        "The tool tested off the live control room PC"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "09066fec-c8c0-45d3-b567-91e70999772d",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "/home/ccw/.hermes/home-project-scale/workspace/project-scale/cost-estimation/v0_2/Pilot/plan-2026-11-25-sat-poc-v1/presentation/sources/s09-amendment.sequence.json",
+  "output": "/home/ccw/.hermes/home-project-scale/workspace/project-scale/cost-estimation/v0_2/Pilot/plan-2026-11-25-sat-poc-v1/presentation/s09-amendment.html",
+  "specification": {
+    "sha256": "3a3043c86c7fdab21b46fc28371648d741697ac66e4783268da501e449ede9ea",
+    "bytes": 5477
+  },
+  "artifact": {
+    "sha256": "f2e572caeee22a639b166218aecf3776cccb1a5541ffda3d6983d6c2769b549e",
+    "bytes": 935221
+  }
+}

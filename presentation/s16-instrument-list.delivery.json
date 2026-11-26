@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "1dd1b125-1651-4371-9bf6-41e321ee0144",
+  "status": "current",
+  "command": "deliver",
+  "type": "sequence",
+  "input": "/home/ccw/.hermes/home-project-scale/workspace/project-scale/cost-estimation/v0_2/Pilot/plan-2026-11-25-sat-poc-v1/presentation/sources/s16-instrument-list.sequence.json",
+  "output": "/home/ccw/.hermes/home-project-scale/workspace/project-scale/cost-estimation/v0_2/Pilot/plan-2026-11-25-sat-poc-v1/presentation/s16-instrument-list.html",
+  "specification": {
+    "sha256": "50c572af353bee366e6b0d9285d51f01cef9c707470869f88333cca0b9a250e2",
+    "bytes": 3737
+  },
+  "artifact": {
+    "sha256": "681b9563f2c779d6f0f2aee037e3067a2b81c36736307c6df21462857b6ad2cc",
+    "bytes": 927365
+  }
+}
